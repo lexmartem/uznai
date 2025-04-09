@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: uznai
+  datasource:
+    url: jdbc:postgresql://localhost:5432/uznai
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+    table: flyway_schema_history
+    validate-on-migrate: true
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+logging:
+  level:
+    root: INFO
+    com.uznai: DEBUG
+    org.springframework.web: INFO
+    org.hibernate: INFO
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:your-256-bit-secret}
+    expiration: 86400000 # 24 hours in milliseconds
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
+  allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+  allowed-headers: Authorization,Content-Type
+  allow-credentials: true
+  max-age: 3600 
