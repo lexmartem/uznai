@@ -152,13 +152,27 @@ com.uznai/
 - **Virtual Thread Optimization**: Use for I/O-bound operations instead of traditional thread pools
 
 ### Security Practices
-- **JWT Authentication**: Implement stateless JWT-based authentication
-- **Password Encryption**: Use BCrypt for password hashing
-- **Role-Based Access Control**: Implement Spring Security roles/authorities
-- **Input Validation**: Sanitize and validate all input
-- **CORS Configuration**: Set up proper CORS policies
-- **Rate Limiting**: Implement for public endpoints
-- **Security Headers**: Set appropriate security headers
+- **JWT Authentication**: 
+  - Implement stateless JWT-based authentication
+  - Use refresh tokens for extended sessions
+  - Implement token blacklisting for logout
+  - Set appropriate token expiration times
+- **Password Security**:
+  - Use BCrypt for password hashing
+  - Implement password strength validation
+  - Secure password reset flow
+- **Role-Based Access Control**:
+  - Implement Spring Security roles/authorities
+  - Use method-level security annotations
+  - Validate role assignments
+- **Input Validation**:
+  - Sanitize and validate all input
+  - Use Bean Validation API
+  - Implement custom validators where needed
+- **Security Headers**:
+  - Set appropriate security headers
+  - Configure CORS policies
+  - Implement rate limiting
 
 ## 4. FRONTEND TECHNICAL PREFERENCES
 

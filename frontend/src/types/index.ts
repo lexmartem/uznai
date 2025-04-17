@@ -26,8 +26,8 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 // Quiz Types
@@ -60,4 +60,17 @@ export enum QuestionType {
   MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
   TRUE_FALSE = 'TRUE_FALSE',
   SHORT_ANSWER = 'SHORT_ANSWER',
+}
+
+// User Profile Types
+export interface UserProfile {
+  username: string;
+  bio?: string;
+  avatarUrl?: string;
+}
+
+export interface PasswordChangeRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 } 

@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 interface ApiError {
@@ -8,21 +6,39 @@ interface ApiError {
 }
 
 class ApiClient {
+  private static getAuthToken(): string | null {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('authToken');
+    }
+    return null;
+  }
+
   private static async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
+    const token = this.getAuthToken();
+    
     const headers = {
       'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` }),
       ...options.headers,
     };
 
+    const config: RequestInit = {
+      ...options,
+      headers,
+      mode: 'cors',
+    };
+
+    // Only include credentials for authenticated requests
+    if (token) {
+      config.credentials = 'include';
+    }
+
     try {
-      const response = await fetch(url, {
-        ...options,
-        headers,
-      });
+      const response = await fetch(url, config);
 
       if (!response.ok) {
         const error: ApiError = {

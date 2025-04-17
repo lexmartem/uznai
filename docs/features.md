@@ -33,9 +33,9 @@ This document outlines the features of Uznai, an interactive quiz creation and s
 |------|--------------------------|----------|------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-----------------------------------|
 | F1   | User Registration        | Must     | Medium     | Allow users to create an account with email and password                   | User can sign up, receive confirmation, and log in; email must be unique                             | JWT token generation, Spring Security                        | Duplicate emails, weak passwords |
 | F2   | User Login               | Must     | Low        | Enable users to log in with credentials                                    | User enters valid credentials and receives a JWT token; invalid attempts show error                 | Spring Security, JWT authentication                         | Account lockout after attempts   |
-| F3   | Role-Based Access        | Should   | Medium     | Restrict premium features to paid users                                    | Free users access basic features; premium users unlock advanced features (e.g., AI generation)       | Spring Security roles, JWT claims                            | Role misassignment               |
-| F4   | Password Reset           | Should   | Medium     | Allow users to reset passwords via email                                   | User requests reset, receives email link, and updates password successfully                         | Email service integration (e.g., Spring Mail)                | Expired reset links              |
-| F5   | Session Management       | Must     | Medium     | Maintain user sessions with secure logout                                 | User stays logged in across pages; logout invalidates token                                         | Spring Session, Redis or in-memory                           | Session timeout handling         |
+| F3   | Role-Based Access        | Must     | Medium     | Restrict premium features to paid users                                    | Free users access basic features; premium users unlock advanced features                             | Spring Security roles, JWT claims                            | Role misassignment               |
+| F4   | Password Reset           | Must     | Medium     | Allow users to reset passwords via email                                   | User requests reset, receives email link, and updates password successfully                         | Email service integration, token management                  | Expired reset links              |
+| F5   | Session Management       | Must     | Medium     | Maintain user sessions with secure logout                                 | User stays logged in across pages; logout invalidates token                                         | JWT blacklisting, refresh tokens                            | Session timeout handling         |
 
 ### Quiz Creation
 | ID   | Feature                  | Priority | Complexity | Description                                                                 | Acceptance Criteria                                                                                   | Technical Considerations                                      | Edge Cases                       |
@@ -48,7 +48,7 @@ This document outlines the features of Uznai, an interactive quiz creation and s
 ### Quiz Taking
 | ID   | Feature                  | Priority | Complexity | Description                                                                 | Acceptance Criteria                                                                                   | Technical Considerations                                      | Edge Cases                       |
 |------|--------------------------|----------|------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-----------------------------------|
-| F10  | Quiz Access              | Must     | Low        | Users can take public quizzes or private ones they’re authorized for       | User views and completes quiz; results are shown post-submission                                    | API endpoint security                                        | Unauthorized access attempts     |
+| F10  | Quiz Access              | Must     | Low        | Users can take public quizzes or private ones they're authorized for       | User views and completes quiz; results are shown post-submission                                    | API endpoint security                                        | Unauthorized access attempts     |
 | F11  | Quiz Results             | Must     | Medium     | Display score and correct answers after quiz completion                    | User finishes quiz; sees score and answer breakdown                                                 | Result calculation logic                                     | Partial submissions              |
 | F12  | Responsive Design        | Must     | Medium     | Quiz-taking works seamlessly across devices                                | Quiz UI adapts to mobile, tablet, and desktop without functionality loss                            | Tailwind CSS, media queries                                  | Browser compatibility            |
 
@@ -56,7 +56,7 @@ This document outlines the features of Uznai, an interactive quiz creation and s
 | ID   | Feature                  | Priority | Complexity | Description                                                                 | Acceptance Criteria                                                                                   | Technical Considerations                                      | Edge Cases                       |
 |------|--------------------------|----------|------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-----------------------------------|
 | F13  | Quiz Sharing             | Must     | Low        | Users can share public quizzes via links                                   | User generates shareable link; others access quiz via link                                          | URL generation, shortlink option                             | Broken links                     |
-| F14  | Quiz Rating              | Should   | Medium     | Users can rate quizzes they’ve taken                                       | User submits 1-5 star rating; average displayed on quiz page                                        | Database aggregation                                         | Spam ratings                     |
+| F14  | Quiz Rating              | Should   | Medium     | Users can rate quizzes they've taken                                       | User submits 1-5 star rating; average displayed on quiz page                                        | Database aggregation                                         | Spam ratings                     |
 | F15  | Public Quiz Discovery    | Should   | Medium     | Browse and search public quizzes                                           | User finds quizzes by keyword or category; results are relevant                                    | Search indexing (e.g., PostgreSQL full-text search)          | No results found                 |
 
 ### Real-Time Quiz Sessions
@@ -65,44 +65,45 @@ This document outlines the features of Uznai, an interactive quiz creation and s
 | F16  | Live Session Hosting     | Must     | High       | Users can host live quiz sessions with real-time participation             | Host starts session; participants join and answer in real time                                      | WebSocket, STOMP protocol                                    | Session crashes                  |
 | F17  | Real-Time Leaderboards   | Must     | High       | Display live scores during quiz sessions                                   | Scores update instantly as participants answer; leaderboard reflects ranking                        | WebSocket pub/sub, server-side state                         | Ties in scoring                  |
 | F18  | Session Synchronization  | Must     | High       | Sync quiz timing across participants                               | All users see questions and timers aligned with server time                                         | Server-client clock sync                                     | Network latency                  |
-| F19  | User Presence Tracking   | Should   | Medium     | Show who’s active in a live session                                        | Participants see list of active users; updates on join/leave                                        | WebSocket events                                             | Ghost users                      |
+| F19  | User Presence Tracking   | Should   | Medium     | Show who's active in a live session                                        | Participants see list of active users; updates on join/leave                                        | WebSocket events                                             | Ghost users                      |
 
 ### User Profiles
 | ID   | Feature                  | Priority | Complexity | Description                                                                 | Acceptance Criteria                                                                                   | Technical Considerations                                      | Edge Cases                       |
 |------|--------------------------|----------|------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-----------------------------------|
-| F20  | Profile Creation         | Must     | Low        | Users can create and view basic profiles                                   | Profile shows username, created quizzes; editable by owner                                          | Database entity, API endpoint                                | Duplicate usernames              |
-| F21  | Quiz History             | Should   | Medium     | Display quizzes created and taken by the user                              | Profile lists user’s quiz activity with links to details                                            | Database queries, pagination                                 | Large history volumes            |
+| F20  | Profile Creation         | Must     | Medium     | Users can create and view profiles with avatars                            | Profile shows username, avatar, bio; editable by owner                                              | File upload, image processing                                | Large file uploads               |
+| F21  | Profile Management       | Must     | Medium     | Users can update their profile information                                 | User can update username, email, avatar, and bio                                                    | Form validation, file handling                               | Concurrent updates               |
+| F22  | Quiz History             | Should   | Medium     | Display quizzes created and taken by the user                              | Profile lists user's quiz activity with links to details                                            | Database queries, pagination                                 | Large history volumes            |
 
 ### AI Integration
 | ID   | Feature                  | Priority | Complexity | Description                                                                 | Acceptance Criteria                                                                                   | Technical Considerations                                      | Edge Cases                       |
 |------|--------------------------|----------|------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-----------------------------------|
-| F22  | AI Quiz Generation       | Should   | High       | Generate quizzes from text prompts using OpenAI                            | User inputs prompt; AI returns quiz with questions and answers                                      | OpenAI API integration, rate limiting                        | Poor prompt quality              |
-| F23  | Usage Limits             | Should   | Medium     | Restrict AI usage based on free/premium tier                               | Free users get limited generations; premium users get more                                          | Bucket4j, user tier tracking                                 | Overuse attempts                 |
+| F23  | AI Quiz Generation       | Should   | High       | Generate quizzes from text prompts using OpenAI                            | User inputs prompt; AI returns quiz with questions and answers                                      | OpenAI API integration, rate limiting                        | Poor prompt quality              |
+| F24  | Usage Limits             | Should   | Medium     | Restrict AI usage based on free/premium tier                               | Free users get limited generations; premium users get more                                          | Bucket4j, user tier tracking                                 | Overuse attempts                 |
 
 ### PDF Processing
 | ID   | Feature                  | Priority | Complexity | Description                                                                 | Acceptance Criteria                                                                                   | Technical Considerations                                      | Edge Cases                       |
 |------|--------------------------|----------|------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-----------------------------------|
-| F24  | PDF Quiz Generation      | Should   | High       | Create quizzes from uploaded PDF content                                   | User uploads PDF; system extracts text and generates quiz                                           | Apache PDFBox, text parsing                                  | Corrupted PDFs                   |
+| F25  | PDF Quiz Generation      | Should   | High       | Create quizzes from uploaded PDF content                                   | User uploads PDF; system extracts text and generates quiz                                           | Apache PDFBox, text parsing                                  | Corrupted PDFs                   |
 
 ### Payment Processing
 | ID   | Feature                  | Priority | Complexity | Description                                                                 | Acceptance Criteria                                                                                   | Technical Considerations                                      | Edge Cases                       |
 |------|--------------------------|----------|------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-----------------------------------|
-| F25  | Subscription Model       | Should   | High       | Offer premium features via subscription                                    | User subscribes via Stripe; gains access to premium features                                        | Stripe integration, webhook handling                         | Payment failures                 |
+| F26  | Subscription Model       | Should   | High       | Offer premium features via subscription                                    | User subscribes via Stripe; gains access to premium features                                        | Stripe integration, webhook handling                         | Payment failures                 |
 
 ### Platform Infrastructure
 | ID   | Feature                  | Priority | Complexity | Description                                                                 | Acceptance Criteria                                                                                   | Technical Considerations                                      | Edge Cases                       |
 |------|--------------------------|----------|------------|-----------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------|--------------------------------------------------------------|-----------------------------------|
-| F26  | Cost-Effective Hosting   | Must     | Medium     | Deploy on free/low-cost platforms (e.g., Railway, Render)                  | App runs within free tier limits; scales down when idle                                            | Sleep/wake functionality                                     | Resource exhaustion              |
-| F27  | Progressive Web App      | Could    | Medium     | Enable offline access and app-like experience                              | Users install PWA; basic features work offline                                                      | Next.js PWA setup                                            | Cache issues                     |
-| F28  | CI/CD Pipeline           | Must     | Medium     | Automate builds and deployments                                    | Code commits trigger tests and deployment; failures are flagged                                     | GitHub Actions configuration                                 | Failed deployments               |
+| F27  | Cost-Effective Hosting   | Must     | Medium     | Deploy on free/low-cost platforms (e.g., Railway, Render)                  | App runs within free tier limits; scales down when idle                                            | Sleep/wake functionality                                     | Resource exhaustion              |
+| F28  | Progressive Web App      | Could    | Medium     | Enable offline access and app-like experience                              | Users install PWA; basic features work offline                                                      | Next.js PWA setup                                            | Cache issues                     |
+| F29  | CI/CD Pipeline           | Must     | Medium     | Automate builds and deployments                                    | Code commits trigger tests and deployment; failures are flagged                                     | GitHub Actions configuration                                 | Failed deployments               |
 
 ## Summary
-- **Total Features:** 28
+- **Total Features:** 29
 - **By Priority:**
-  - Must Have: 14
+  - Must Have: 15
   - Should Have: 12
   - Could Have: 1
-  - Won’t Have: 0
+  - Won't Have: 0
 - **By Category:**
   - User Authentication: 5
   - Quiz Creation: 4
@@ -117,14 +118,14 @@ This document outlines the features of Uznai, an interactive quiz creation and s
 - **Complexity Breakdown:**
   - Low: 5
   - Medium: 13
-  - High: 10
+  - High: 11
 
 ---
 
 ### Clarifications Needed
 The PRD is well-detailed, but a few points require clarification:
-1. **Question Types (F9):** The PRD mentions "multiple question types" but doesn’t specify which ones. Are multiple choice and true/false sufficient, or are others (e.g., open-ended) expected?
-2. **Premium Features (F3, F25):** The PRD implies AI generation and PDF processing are premium, but this isn’t explicit. Which features are definitively premium?
-3. **Live Session Scale (F16):** What’s the expected max number of participants per session to ensure free-tier hosting suffices?
+1. **Question Types (F9):** The PRD mentions "multiple question types" but doesn't specify which ones. Are multiple choice and true/false sufficient, or are others (e.g., open-ended) expected?
+2. **Premium Features (F3, F26):** The PRD implies AI generation and PDF processing are premium, but this isn't explicit. Which features are definitively premium?
+3. **Live Session Scale (F16):** What's the expected max number of participants per session to ensure free-tier hosting suffices?
 
 These can be resolved with the product owner before finalizing the feature list for development. The current `features.md` assumes reasonable defaults (e.g., basic question types, AI/PDF as premium, small-scale live sessions).

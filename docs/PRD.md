@@ -64,6 +64,21 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Stripe for payment processing
 - GitHub Actions for CI/CD
 
+### Authentication & Authorization
+- JWT-based authentication with refresh token mechanism
+- Role-based access control (USER, PREMIUM_USER)
+- Secure password reset flow with email verification
+- Session management with configurable timeouts
+- Profile management with avatar support
+
+### Security Requirements
+- BCrypt password hashing
+- JWT token blacklisting for logout
+- Rate limiting on authentication endpoints
+- CORS configuration for API security
+- Input validation and sanitization
+- Secure headers configuration
+
 ## Hosting Cost Estimates
 
 ### Cost-Saving Options
@@ -119,19 +134,18 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 
 ## Implementation Phases
 
-### Phase 1: Core Backend (4 weeks)
-- Spring Boot project setup with Java 21
-- PostgreSQL database integration
-- User authentication and basic API endpoints
-- Simple quiz creation and retrieval
-- CI/CD setup with GitHub Actions
+### Phase 1: Core Infrastructure (Completed)
+- Basic project setup
+- Database initialization
+- CI/CD pipeline
+- Development environment
 
-### Phase 2: Frontend Integration (4 weeks)
-- React frontend setup with Next.js
-- User authentication UI
-- Quiz creation interface
-- Quiz taking functionality
-- Basic user profiles
+### Phase 2: Authentication & Profile (Current)
+- User registration and login
+- JWT authentication
+- Password reset functionality
+- Basic profile management
+- Role-based access control
 
 ### Phase 3: Advanced Features (6 weeks)
 - WebSocket implementation with virtual threads for real-time features
