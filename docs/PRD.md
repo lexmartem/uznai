@@ -2,7 +2,7 @@
 # Uznai - Interactive Quiz Creation and Sharing Platform
 
 ## Document Information
-**Version:** 3.0  
+**Version:** 3.1  
 **Date:** March 24, 2025  
 **Status:** Draft  
 **Owner:** [Your Name]  
@@ -20,7 +20,7 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Enable AI-powered quiz generation from prompts and PDF content
 - Create a social environment for sharing and rating quizzes
 - Deliver a responsive experience that works across devices
-- Implement a secure user authentication system
+- Implement a secure user authentication system with advanced session management
 - Support real-time interactive quiz sessions with live leaderboards
 - Maintain zero or minimal hosting costs using cost-effective infrastructure
 
@@ -31,10 +31,12 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Responsive design with Tailwind CSS
 - State management with React Context API and TanStack Query
 - SockJS/STOMP client for real-time communication
-- Form validation and handling
+- Form validation and handling with comprehensive error feedback
 - Progressive Web App capabilities
 - Browser compatibility: Latest versions of Chrome, Firefox, Safari, Edge
 - Component library: shadcn/ui with custom theming
+- JWT token management with refresh token support
+- Real-time profile updates and concurrent edit handling
 
 ### Backend
 - Java Spring Boot application with Java 21
@@ -42,12 +44,14 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Spring Security for authentication and authorization
 - Spring WebSocket with STOMP for real-time features
 - Spring Data JPA for database interactions
-- JWT token-based authentication
+- JWT token-based authentication with refresh tokens
 - Apache PDFBox for PDF processing
 - OpenAI API integration for quiz generation
 - Rate limiting with Bucket4j
 - Logging with SLF4J and Logback
 - Virtual Threads for improved scalability
+- Concurrent profile update handling
+- Real-time session management
 
 ### Database
 - PostgreSQL for relational data storage
@@ -55,6 +59,7 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - JPA/Hibernate for ORM capabilities
 - Flyway for database migrations
 - Transaction management through Spring
+- Optimistic locking for concurrent profile updates
 
 ### Infrastructure
 - Railway.app, Render, or Fly.io for Spring Boot hosting (free or low-cost tiers)
@@ -70,6 +75,9 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Secure password reset flow with email verification
 - Session management with configurable timeouts
 - Profile management with avatar support
+- Remember me functionality for extended sessions
+- Cross-device session synchronization
+- Real-time profile updates
 
 ### Security Requirements
 - BCrypt password hashing
@@ -78,6 +86,9 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - CORS configuration for API security
 - Input validation and sanitization
 - Secure headers configuration
+- Protection against concurrent profile edits
+- XSS and CSRF protection
+- Secure file upload handling
 
 ## Hosting Cost Estimates
 
@@ -101,6 +112,8 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Implement sleep/wake functionality to stay within free tier limits
 - Optimize resource usage for concurrent users on free tier instances
 - Leverage Java 21 virtual threads for improved scalability without increasing hosting costs
+- Implement efficient caching strategies for profile data
+- Optimize avatar storage and retrieval
 
 ## Technical Architecture
 
@@ -111,6 +124,7 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - DTO objects for API requests/responses
 - Entity classes for database models
 - Configuration classes for security, websockets, etc.
+- Concurrent update handling for profile management
 
 ### Real-time Communication
 - Spring WebSocket with STOMP messaging protocol
@@ -118,12 +132,16 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Session management with Spring Session
 - User presence tracking with WebSocket events
 - Virtual Threads for efficient WebSocket connection handling
+- Real-time profile update notifications
 
 ### Authentication & Security
 - Spring Security with JWT token authentication
 - Role-based access control for premium features
 - CORS configuration for frontend access
 - XSS and CSRF protection
+- Refresh token mechanism
+- Remember me functionality
+- Concurrent session management
 
 ### Live Sessions Implementation
 - WebSocket topics for session rooms
@@ -131,6 +149,7 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Server-side session state management
 - Client synchronization with server timing
 - Virtual Threads for handling concurrent connections efficiently
+- Real-time leaderboard updates
 
 ## Implementation Phases
 
@@ -141,11 +160,13 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Development environment
 
 ### Phase 2: Authentication & Profile (Current)
-- User registration and login
-- JWT authentication
-- Password reset functionality
-- Basic profile management
+- User registration and login with refresh tokens
+- JWT authentication with remember me
+- Password reset functionality with email verification
+- Comprehensive profile management
 - Role-based access control
+- Real-time profile updates
+- Avatar upload and management
 
 ### Phase 3: Advanced Features (6 weeks)
 - WebSocket implementation with virtual threads for real-time features
@@ -212,6 +233,12 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
     <artifactId>service</artifactId>
     <version>0.14.0</version>
 </dependency>
+
+<!-- Redis (Optional) -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-data-redis</artifactId>
+</dependency>
 ```
 
 ### Java 21 Configuration
@@ -235,6 +262,23 @@ public class UznaiApplication {
     @Bean
     public ExecutorService applicationTaskExecutor() {
         return Executors.newVirtualThreadPerTaskExecutor();
+    }
+
+    // Configure WebSocket with virtual threads
+    @Bean
+    public WebSocketHandlerDecoratorFactory webSocketHandlerDecoratorFactory() {
+        return handler -> new WebSocketHandlerDecorator(handler) {
+            @Override
+            public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
+                Thread.startVirtualThread(() -> {
+                    try {
+                        super.handleMessage(session, message);
+                    } catch (Exception e) {
+                        // Handle exception
+                    }
+                });
+            }
+        };
     }
 }
 ```

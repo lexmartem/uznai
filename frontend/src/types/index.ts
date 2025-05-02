@@ -10,6 +10,11 @@ export interface ApiError {
   message: string;
   status: number;
   code?: string;
+  response?: {
+    data: any;
+    status: number;
+    statusText: string;
+  };
 }
 
 // Common Types

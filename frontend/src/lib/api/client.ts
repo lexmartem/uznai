@@ -3,6 +3,11 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 interface ApiError {
   message: string;
   status: number;
+  response?: {
+    data: any;
+    status: number;
+    statusText: string;
+  };
 }
 
 class ApiClient {
@@ -30,12 +35,8 @@ class ApiClient {
       ...options,
       headers,
       mode: 'cors',
+      credentials: 'include', // Always include credentials
     };
-
-    // Only include credentials for authenticated requests
-    if (token) {
-      config.credentials = 'include';
-    }
 
     try {
       const response = await fetch(url, config);
@@ -49,6 +50,11 @@ class ApiClient {
         try {
           const data = await response.json();
           error.message = data.message || error.message;
+          error.response = {
+            data,
+            status: response.status,
+            statusText: response.statusText,
+          };
         } catch {
           // If parsing fails, use default error message
         }
@@ -56,11 +62,19 @@ class ApiClient {
         throw error;
       }
 
-      return response.json();
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`API request failed: ${error.message}`);
+      // For empty responses (like DELETE operations sometimes)
+      if (response.status === 204) {
+        return {} as T;
       }
+
+      // Try to parse as JSON, but handle cases where response might not be JSON
+      try {
+        return await response.json();
+      } catch (e) {
+        return {} as T;
+      }
+    } catch (error) {
+      // Do not wrap the error, just re-throw so custom properties are preserved
       throw error;
     }
   }
@@ -98,4 +112,4 @@ class ApiClient {
   }
 }
 
-export { ApiClient }; 
+export { ApiClient };

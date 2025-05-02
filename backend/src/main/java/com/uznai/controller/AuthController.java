@@ -2,7 +2,7 @@ package com.uznai.controller;
 
 import com.uznai.dto.request.LoginRequest;
 import com.uznai.dto.request.RegisterRequest;
-import com.uznai.dto.response.JwtAuthResponse;
+import com.uznai.dto.response.JwtResponse;
 import com.uznai.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,23 +17,35 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<JwtAuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<JwtResponse> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<JwtAuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<JwtAuthResponse> refreshToken(@RequestHeader("Authorization") String refreshToken) {
+    public ResponseEntity<JwtResponse> refreshToken(@RequestHeader("Authorization") String refreshToken) {
         return ResponseEntity.ok(authService.refreshToken(refreshToken.substring(7)));
     }
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader("Authorization") String token) {
         authService.logout(token.substring(7));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> requestPasswordReset(@RequestParam String email) {
+        authService.requestPasswordReset(email);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestParam String token, @RequestParam String newPassword) {
+        authService.resetPassword(token, newPassword);
         return ResponseEntity.noContent().build();
     }
 } 

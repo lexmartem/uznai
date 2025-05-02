@@ -50,5 +50,33 @@ export const authService = {
   isAuthenticated: (): boolean => {
     if (typeof window === 'undefined') return false;
     return !!localStorage.getItem('authToken');
-  }
+  },
+
+  async requestPasswordReset(email: string): Promise<void> {
+    const response = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to request password reset');
+    }
+  },
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const response = await fetch('/api/auth/reset-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token, newPassword }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to reset password');
+    }
+  },
 }; 

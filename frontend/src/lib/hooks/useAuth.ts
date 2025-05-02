@@ -53,8 +53,21 @@ export function useAuth() {
         localStorage.setItem('refreshToken', response.refresh_token);
       }
       setUser(response.user);
-    } catch (err) {
-      setError('Registration failed. Please try again.');
+    } catch (err: any) {
+      // Handle validation errors
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        if (typeof errorData === 'object') {
+          // If it's a validation error with field-specific messages
+          const errorMessages = Object.values(errorData).join(', ');
+          setError(errorMessages);
+        } else {
+          // If it's a general error message
+          setError(errorData);
+        }
+      } else {
+        setError('Registration failed. Please try again.');
+      }
       throw err;
     }
   };

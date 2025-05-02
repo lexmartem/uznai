@@ -1,6 +1,10 @@
 spring:
   application:
     name: uznai
+  config:
+    import:
+      - optional:application-email.yml
+      - optional:application-security.yml
   datasource:
     url: jdbc:postgresql://localhost:5432/uznai
     username: ${DB_USERNAME:postgres}
@@ -28,12 +32,16 @@ logging:
   level:
     root: INFO
     com.uznai: DEBUG
-    org.springframework.web: INFO
-    org.hibernate: INFO
+    org.springframework.web: DEBUG
+    org.springframework.security: TRACE
+    org.springframework.security.web.FilterChainProxy: DEBUG
+    org.springframework.security.web.access: TRACE
+    org.springframework.web.cors: TRACE
+    org.springframework.web.servlet.DispatcherServlet: TRACE
 
 security:
   jwt:
-    secret: ${JWT_SECRET:your-256-bit-secret}
+    secret: ${JWT_SECRET:this-is-a-very-long-and-secure-256-bit-jwt-secret-key-that-meets-the-requirements-and-is-more-than-32-bytes-long}
     expiration: 86400000 # 24 hours in milliseconds
 
 cors:

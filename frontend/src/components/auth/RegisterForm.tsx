@@ -27,8 +27,21 @@ export function RegisterForm() {
     try {
       const { confirmPassword, ...registerData } = formData;
       await register(registerData);
-    } catch (err) {
-      setError(authError || 'Registration failed. Please try again.');
+    } catch (err: any) {
+      // Try to extract field-specific error messages
+      if (err?.response?.data) {
+        const errorData = err.response.data;
+        if (typeof errorData === 'object') {
+          // Show all field errors joined by comma
+          setError(Object.values(errorData).join(', '));
+        } else {
+          setError(errorData);
+        }
+      } else if (authError) {
+        setError(authError);
+      } else {
+        setError('Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }

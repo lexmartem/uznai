@@ -23,6 +23,9 @@ public class JwtTokenProvider {
     @Value("${security.jwt.expiration}")
     private long jwtExpirationInMs;
 
+    @Value("${security.jwt.refresh-expiration}")
+    private long jwtRefreshExpirationInMs;
+
     private Key key;
 
     @PostConstruct
@@ -31,9 +34,17 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(Authentication authentication) {
+        return generateToken(authentication, jwtExpirationInMs);
+    }
+
+    public String generateRefreshToken(Authentication authentication) {
+        return generateToken(authentication, jwtRefreshExpirationInMs);
+    }
+
+    private String generateToken(Authentication authentication, long expirationInMs) {
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
+        Date expiryDate = new Date(now.getTime() + expirationInMs);
 
         return Jwts.builder()
                 .setSubject(userPrincipal.getId().toString())
@@ -55,6 +66,26 @@ public class JwtTokenProvider {
                 .getBody();
 
         return claims.getSubject();
+    }
+
+    public String getUsernameFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("username", String.class);
+    }
+
+    public long getExpirationTimeFromToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.getExpiration().getTime();
     }
 
     public boolean validateToken(String authToken) {
