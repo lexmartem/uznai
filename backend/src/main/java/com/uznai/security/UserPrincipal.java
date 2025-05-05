@@ -4,6 +4,7 @@ import com.uznai.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class UserPrincipal implements UserDetails {
     private UUID id;
@@ -35,6 +37,11 @@ public class UserPrincipal implements UserDetails {
                 .password(user.getPasswordHash())
                 .authorities(authorities)
                 .build();
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
     }
 
     @Override

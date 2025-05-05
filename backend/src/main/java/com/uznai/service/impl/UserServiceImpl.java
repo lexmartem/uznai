@@ -165,7 +165,7 @@ public class UserServiceImpl implements UserService {
 
     private UserResponse mapToUserResponse(User user) {
         return UserResponse.builder()
-                .id(user.getId().toString())
+                .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .createdAt(user.getCreatedAt())

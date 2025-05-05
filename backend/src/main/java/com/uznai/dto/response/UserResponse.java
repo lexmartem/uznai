@@ -7,13 +7,14 @@ import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
-    private String id;
+    private UUID id;
     private String username;
     private String email;
     private ZonedDateTime createdAt;

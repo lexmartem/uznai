@@ -19,9 +19,4 @@ public class ApiErrorResponse {
     private String message;
     private String path;
     private List<String> details;
-
-    public static ApiErrorResponseBuilder builder() {
-        return new ApiErrorResponseBuilder()
-                .timestamp(ZonedDateTime.now());
-    }
 } 
