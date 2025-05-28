@@ -57,6 +57,9 @@ public abstract class QuizMapper {
     public abstract QuizSummaryResponse toSummaryResponse(Quiz quiz);
 
     protected List<UserResponse> mapCollaborators(Set<QuizCollaborator> collaborators) {
+        if (collaborators == null) {
+            return java.util.Collections.emptyList();
+        }
         return collaborators.stream()
                 .map(QuizCollaborator::getUser)
                 .map(userMapper::toResponse)

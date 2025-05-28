@@ -1,81 +1,60 @@
 package com.uznai.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
+import lombok.Data;
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 import java.util.UUID;
+import java.util.HashSet;
 
+@Data
 @Entity
 @Table(name = "quizzes")
-@Getter
-@Setter
 public class Quiz {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 1000)
     private String description;
 
     @Column(name = "is_public", nullable = false)
     private boolean isPublic;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
     private User creator;
-
-    @Version
-    private Integer version;
-
-    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Question> questions = new HashSet<>();
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<QuizCollaborator> collaborators = new HashSet<>();
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<QuizChange> changes = new HashSet<>();
+    private List<QuizChange> changes;
 
-    public void addQuestion(Question question) {
-        questions.add(question);
-        question.setQuiz(this);
+    @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Question> questions;
+
+    @Version
+    private Long version;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
-    public void removeQuestion(Question question) {
-        questions.remove(question);
-        question.setQuiz(null);
-    }
-
-    public void addCollaborator(User user) {
-        QuizCollaborator collaborator = new QuizCollaborator();
-        collaborator.setQuiz(this);
-        collaborator.setUser(user);
-        collaborators.add(collaborator);
-    }
-
-    public void removeCollaborator(User user) {
-        collaborators.removeIf(c -> c.getUser().equals(user));
-    }
-
-    public void addChange(QuizChange change) {
-        changes.add(change);
-        change.setQuiz(this);
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
     }
 } 

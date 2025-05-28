@@ -7,5 +7,5 @@ public class UpdateQuizRequest {
     private String title;
     private String description;
     private Boolean isPublic;
-    private Integer version;
+    private Long version;
 } 

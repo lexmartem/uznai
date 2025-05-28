@@ -1,18 +1,25 @@
 package com.uznai.service.impl;
 
+import com.uznai.dto.request.CreateAnswerRequest;
 import com.uznai.dto.request.CreateQuestionRequest;
 import com.uznai.dto.request.UpdateQuestionRequest;
+import com.uznai.dto.response.AnswerResponse;
 import com.uznai.dto.response.QuestionResponse;
+import com.uznai.entity.Answer;
 import com.uznai.entity.Question;
 import com.uznai.entity.Quiz;
 import com.uznai.entity.User;
 import com.uznai.entity.enums.QuestionType;
 import com.uznai.exception.NotFoundException;
 import com.uznai.exception.UnauthorizedException;
+import com.uznai.mapper.AnswerMapper;
 import com.uznai.mapper.QuestionMapper;
+import com.uznai.repository.AnswerRepository;
 import com.uznai.repository.QuestionRepository;
 import com.uznai.repository.QuizRepository;
+import com.uznai.repository.UserRepository;
 import com.uznai.service.QuestionService;
+import com.uznai.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +34,16 @@ public class QuestionServiceImpl implements QuestionService {
 
     private final QuestionRepository questionRepository;
     private final QuizRepository quizRepository;
+    private final UserRepository userRepository;
     private final QuestionMapper questionMapper;
+    private final AnswerRepository answerRepository;
+    private final AnswerMapper answerMapper;
 
     @Override
     @Transactional(readOnly = true)
-    public List<QuestionResponse> getQuestionsByQuizId(UUID quizId, User user) {
+    public List<QuestionResponse> getQuestionsByQuizId(UUID quizId, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new NotFoundException("Quiz not found"));
 
@@ -47,7 +59,9 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public QuestionResponse createQuestion(UUID quizId, CreateQuestionRequest request, User user) {
+    public QuestionResponse createQuestion(UUID quizId, CreateQuestionRequest request, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new NotFoundException("Quiz not found"));
 
@@ -68,7 +82,9 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public QuestionResponse updateQuestion(UUID questionId, UpdateQuestionRequest request, User user) {
+    public QuestionResponse updateQuestion(UUID questionId, UpdateQuestionRequest request, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new NotFoundException("Question not found"));
 
@@ -91,7 +107,9 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     @Transactional
-    public void deleteQuestion(UUID questionId, User user) {
+    public void deleteQuestion(UUID questionId, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new NotFoundException("Question not found"));
 
@@ -100,5 +118,27 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         questionRepository.delete(question);
+    }
+
+    @Override
+    @Transactional
+    public AnswerResponse createAnswer(UUID quizId, UUID questionId, CreateAnswerRequest request, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        Quiz quiz = quizRepository.findById(quizId)
+                .orElseThrow(() -> new NotFoundException("Quiz not found"));
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new NotFoundException("Question not found"));
+        if (!question.getQuiz().getId().equals(quiz.getId())) {
+            throw new NotFoundException("Question does not belong to the specified quiz");
+        }
+        if (!quiz.getCreator().equals(user)) {
+            throw new UnauthorizedException("Only quiz creator can add answers");
+        }
+        Answer answer = answerMapper.toEntity(request);
+        answer.setQuestion(question);
+        System.out.println("[DEBUG] Mapped isCorrect: " + answer.isCorrect());
+        Answer savedAnswer = answerRepository.save(answer);
+        return answerMapper.toResponse(savedAnswer);
     }
 } 

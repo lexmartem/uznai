@@ -1,11 +1,11 @@
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CreateAnswerRequest } from '../../types/quiz';
 
 const answerSchema = z.object({
   answerText: z.string().min(1, 'Answer text is required').max(500, 'Answer text is too long'),
-  isCorrect: z.boolean().default(false),
+  isCorrect: z.boolean(),
   orderIndex: z.number().min(0),
   imageUrl: z.string().url().optional(),
   codeSnippet: z.string().optional(),
@@ -15,7 +15,7 @@ type AnswerFormData = z.infer<typeof answerSchema>;
 
 interface AnswerFormProps {
   initialData?: Partial<AnswerFormData>;
-  onSubmit: (data: AnswerFormData) => void;
+  onSubmit: SubmitHandler<AnswerFormData>;
   isLoading?: boolean;
 }
 

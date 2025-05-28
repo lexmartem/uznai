@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { RegisterRequest } from '@/types/auth';
+import Link from 'next/link';
 
 export function RegisterForm() {
   const { register, error: authError } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<RegisterRequest & { confirmPassword: string }>({
     username: '',
     email: '',
@@ -16,6 +18,7 @@ export function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(false);
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
@@ -27,6 +30,7 @@ export function RegisterForm() {
     try {
       const { confirmPassword, ...registerData } = formData;
       await register(registerData);
+      setSuccess(true);
     } catch (err: any) {
       // Try to extract field-specific error messages
       if (err?.response?.data) {
@@ -46,6 +50,21 @@ export function RegisterForm() {
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
+          Registration successful! You can now log in to your account.
+        </div>
+        <div className="text-center">
+          <Link href="/auth/login" className="text-blue-500 hover:text-blue-600">
+            Go to Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">

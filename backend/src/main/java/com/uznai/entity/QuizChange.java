@@ -1,20 +1,16 @@
 package com.uznai.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-
+import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Data
 @Entity
 @Table(name = "quiz_changes")
-@Getter
-@Setter
 public class QuizChange {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -26,12 +22,30 @@ public class QuizChange {
     private User user;
 
     @Column(name = "change_type", nullable = false)
-    private String changeType;
+    @Enumerated(EnumType.STRING)
+    private ChangeType changeType;
 
-    @Column(name = "change_data", nullable = false, columnDefinition = "jsonb")
+    @Column(name = "change_data", columnDefinition = "jsonb")
     private String changeData;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+
+    public enum ChangeType {
+        QUIZ_CREATED,
+        QUIZ_UPDATED,
+        QUESTION_ADDED,
+        QUESTION_UPDATED,
+        QUESTION_DELETED,
+        ANSWER_ADDED,
+        ANSWER_UPDATED,
+        ANSWER_DELETED,
+        COLLABORATOR_ADDED,
+        COLLABORATOR_REMOVED
+    }
 } 

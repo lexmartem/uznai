@@ -13,7 +13,7 @@ public class QuizResponse {
     private String title;
     private String description;
     private Boolean isPublic;
-    private Integer version;
+    private Long version;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private UserResponse creator;

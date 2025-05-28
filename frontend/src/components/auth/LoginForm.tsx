@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { LoginRequest } from '@/types/auth';
+import Link from 'next/link';
 
 export function LoginForm() {
   const { login, error: authError } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [formData, setFormData] = useState<LoginRequest>({
     username: '',
     password: '',
@@ -15,16 +17,33 @@ export function LoginForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(false);
     setLoading(true);
 
     try {
       await login(formData);
+      setSuccess(true);
     } catch (err) {
       setError(authError || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+        <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
+          Login successful! Welcome back.
+        </div>
+        <div className="text-center">
+          <Link href="/quizzes/new" className="text-blue-500 hover:text-blue-600">
+            Create a New Quiz
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">

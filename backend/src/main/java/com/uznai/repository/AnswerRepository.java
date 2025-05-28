@@ -23,6 +23,6 @@ public interface AnswerRepository extends JpaRepository<Answer, UUID> {
     @Query("SELECT a FROM Answer a WHERE a.question = :question AND a.orderIndex >= :startIndex AND a.orderIndex <= :endIndex ORDER BY a.orderIndex")
     List<Answer> findAnswersInRange(@Param("question") Question question, @Param("startIndex") Integer startIndex, @Param("endIndex") Integer endIndex);
     
-    @Query("SELECT COUNT(a) FROM Answer a WHERE a.question = :question AND a.isCorrect = true")
+    @Query("SELECT COUNT(a) FROM Answer a WHERE a.question = :question AND a.correct = true")
     int countCorrectAnswers(@Param("question") Question question);
 } 

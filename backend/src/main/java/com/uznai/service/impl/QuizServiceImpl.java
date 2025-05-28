@@ -12,6 +12,7 @@ import com.uznai.mapper.QuizMapper;
 import com.uznai.repository.QuizRepository;
 import com.uznai.repository.UserRepository;
 import com.uznai.service.QuizService;
+import com.uznai.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,21 +31,27 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<QuizSummaryResponse> getUserQuizzes(User user, Pageable pageable) {
+    public Page<QuizSummaryResponse> getUserQuizzes(UserPrincipal userPrincipal, Pageable pageable) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         return quizRepository.findUserQuizzes(user, pageable)
                 .map(quizMapper::toSummaryResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<QuizSummaryResponse> getCreatedQuizzes(User user, Pageable pageable) {
+    public Page<QuizSummaryResponse> getCreatedQuizzes(UserPrincipal userPrincipal, Pageable pageable) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         return quizRepository.findByCreator(user, pageable)
                 .map(quizMapper::toSummaryResponse);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<QuizSummaryResponse> getCollaboratedQuizzes(User user, Pageable pageable) {
+    public Page<QuizSummaryResponse> getCollaboratedQuizzes(UserPrincipal userPrincipal, Pageable pageable) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         return quizRepository.findCollaboratedQuizzes(user, pageable)
                 .map(quizMapper::toSummaryResponse);
     }
@@ -58,7 +65,16 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional(readOnly = true)
-    public QuizResponse getQuizById(UUID quizId, User user) {
+    public Page<QuizSummaryResponse> getPublicQuizzesByUser(UUID userId, Pageable pageable) {
+        return quizRepository.findByCreatorIdAndIsPublic(userId, true, pageable)
+                .map(quizMapper::toSummaryResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public QuizResponse getQuizById(UUID quizId, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new NotFoundException("Quiz not found"));
 
@@ -72,8 +88,8 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional
-    public QuizResponse createQuiz(CreateQuizRequest request, User user) {
-        User existingUser = userRepository.findById(user.getId())
+    public QuizResponse createQuiz(CreateQuizRequest request, UserPrincipal userPrincipal) {
+        User existingUser = userRepository.findById(userPrincipal.getId())
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         if (quizRepository.existsByTitleAndCreator(request.getTitle(), existingUser)) {
@@ -82,14 +98,16 @@ public class QuizServiceImpl implements QuizService {
 
         Quiz quiz = quizMapper.toEntity(request);
         quiz.setCreator(existingUser);
-        quiz.setVersion(1);
+        quiz.setVersion(1L);
 
         return quizMapper.toResponse(quizRepository.save(quiz));
     }
 
     @Override
     @Transactional
-    public QuizResponse updateQuiz(UUID quizId, UpdateQuizRequest request, User user) {
+    public QuizResponse updateQuiz(UUID quizId, UpdateQuizRequest request, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new NotFoundException("Quiz not found"));
 
@@ -107,7 +125,9 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional
-    public void deleteQuiz(UUID quizId, User user) {
+    public void deleteQuiz(UUID quizId, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new NotFoundException("Quiz not found"));
 

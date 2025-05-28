@@ -3,67 +3,109 @@ import { Quiz, QuizSummary, CreateQuizRequest, UpdateQuizRequest, Question, Crea
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
 
+function getAuthHeader() {
+  const token = localStorage.getItem('authToken');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 const quizService = {
   // Quiz endpoints
   getQuizzes: async (page: number = 0, size: number = 10): Promise<{ content: QuizSummary[]; totalPages: number; totalElements: number }> => {
     const response = await axios.get(`${API_BASE_URL}/v1/quizzes/me`, {
-      params: { page, size }
+      params: { page, size },
+      headers: getAuthHeader(),
     });
     return response.data;
   },
 
   getQuizById: async (id: string): Promise<Quiz> => {
-    const response = await axios.get(`${API_BASE_URL}/v1/quizzes/${id}`);
+    const response = await axios.get(`${API_BASE_URL}/v1/quizzes/${id}`, {
+      headers: getAuthHeader(),
+    });
     return response.data;
   },
 
   createQuiz: async (quiz: CreateQuizRequest): Promise<Quiz> => {
-    const response = await axios.post(`${API_BASE_URL}/v1/quizzes`, quiz);
+    const response = await axios.post(`${API_BASE_URL}/v1/quizzes`, quiz, {
+      headers: getAuthHeader(),
+    });
     return response.data;
   },
 
   updateQuiz: async (id: string, quiz: UpdateQuizRequest): Promise<Quiz> => {
-    const response = await axios.put(`${API_BASE_URL}/v1/quizzes/${id}`, quiz);
+    const response = await axios.put(`${API_BASE_URL}/v1/quizzes/${id}`, quiz, {
+      headers: getAuthHeader(),
+    });
     return response.data;
   },
 
   deleteQuiz: async (id: string): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/v1/quizzes/${id}`);
+    await axios.delete(`${API_BASE_URL}/v1/quizzes/${id}`, {
+      headers: getAuthHeader(),
+    });
   },
 
   // Question endpoints
   getQuestionsByQuizId: async (quizId: string): Promise<Question[]> => {
-    const response = await axios.get(`${API_BASE_URL}/v1/quizzes/${quizId}/questions`);
+    const response = await axios.get(`${API_BASE_URL}/v1/quizzes/${quizId}/questions`, {
+      headers: getAuthHeader(),
+    });
     return response.data;
   },
 
   createQuestion: async (quizId: string, question: CreateQuestionRequest): Promise<Question> => {
-    const response = await axios.post(`${API_BASE_URL}/v1/quizzes/${quizId}/questions`, question);
+    const response = await axios.post(`${API_BASE_URL}/v1/quizzes/${quizId}/questions`, question, {
+      headers: getAuthHeader(),
+    });
     return response.data;
   },
 
   updateQuestion: async (id: string, question: UpdateQuestionRequest): Promise<Question> => {
-    const response = await axios.put(`${API_BASE_URL}/v1/questions/${id}`, question);
+    const response = await axios.put(`${API_BASE_URL}/v1/questions/${id}`, question, {
+      headers: getAuthHeader(),
+    });
     return response.data;
   },
 
   deleteQuestion: async (id: string): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/v1/questions/${id}`);
+    await axios.delete(`${API_BASE_URL}/v1/questions/${id}`, {
+      headers: getAuthHeader(),
+    });
   },
 
   // Answer endpoints
-  createAnswer: async (questionId: string, answer: CreateAnswerRequest): Promise<Answer> => {
-    const response = await axios.post(`${API_BASE_URL}/v1/questions/${questionId}/answers`, answer);
+  createAnswer: async (quizId: string, questionId: string, answer: CreateAnswerRequest): Promise<Answer> => {
+    const response = await axios.post(`${API_BASE_URL}/v1/quizzes/${quizId}/questions/${questionId}/answers`, answer, {
+      headers: getAuthHeader(),
+    });
     return response.data;
   },
 
   updateAnswer: async (id: string, answer: UpdateAnswerRequest): Promise<Answer> => {
-    const response = await axios.put(`${API_BASE_URL}/v1/answers/${id}`, answer);
+    const response = await axios.put(`${API_BASE_URL}/v1/answers/${id}`, answer, {
+      headers: getAuthHeader(),
+    });
     return response.data;
   },
 
   deleteAnswer: async (id: string): Promise<void> => {
-    await axios.delete(`${API_BASE_URL}/v1/answers/${id}`);
+    await axios.delete(`${API_BASE_URL}/v1/answers/${id}`, {
+      headers: getAuthHeader(),
+    });
+  },
+
+  getAllPublicQuizzes: async (page: number = 0, size: number = 10): Promise<{ content: QuizSummary[]; totalPages: number; totalElements: number }> => {
+    const response = await axios.get(`${API_BASE_URL}/quizzes/public`, {
+      params: { page, size },
+    });
+    return response.data;
+  },
+
+  getPublicQuizzesByUser: async (userId: string, page: number = 0, size: number = 10): Promise<{ content: QuizSummary[]; totalPages: number; totalElements: number }> => {
+    const response = await axios.get(`${API_BASE_URL}/users/${userId}/quizzes`, {
+      params: { page, size },
+    });
+    return response.data;
   }
 };
 

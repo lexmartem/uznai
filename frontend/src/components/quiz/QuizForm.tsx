@@ -1,3 +1,8 @@
+import React, { useEffect, useState } from 'react';
+import { useQuizCollaboration } from '@/hooks/useQuizCollaboration';
+import { UserPresence } from './UserPresence';
+import { QuizChat } from './QuizChat';
+import { ChangeType, QuizData } from '@/types/quiz';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,79 +18,98 @@ const quizSchema = z.object({
 type QuizFormData = CreateQuizRequest;
 
 interface QuizFormProps {
-  initialData?: Partial<CreateQuizRequest>;
-  onSubmit: (data: CreateQuizRequest) => void;
-  isLoading?: boolean;
+  quizId: string;
+  initialData?: Partial<QuizData>;
+  onSave?: (data: QuizData) => void;
 }
 
-export const QuizForm = ({ initialData, onSubmit, isLoading }: QuizFormProps) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<QuizFormData>({
-    resolver: zodResolver(quizSchema),
-    defaultValues: initialData || {
-      title: '',
-      description: '',
-      isPublic: false,
-      collaborators: [],
-    },
+export const QuizForm: React.FC<QuizFormProps> = ({ quizId, initialData, onSave }) => {
+  const [quizData, setQuizData] = useState<QuizData>({
+    title: initialData?.title || '',
+    description: initialData?.description || '',
+    isPublic: initialData?.isPublic || false,
+    questions: initialData?.questions || [],
+    version: initialData?.version || 0
   });
 
+  const { activeUsers, isConnected, sendChange } = useQuizCollaboration({
+    quizId,
+    onQuizUpdate: (data) => {
+      // Handle real-time updates
+      if (data.type === 'QUIZ_UPDATED') {
+        setQuizData(prev => ({
+          ...prev,
+          ...data.changes,
+          version: data.version
+        }));
+      }
+    }
+  });
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value;
+    setQuizData(prev => ({ ...prev, title: newTitle }));
+    sendChange(ChangeType.QUIZ_UPDATED, { title: newTitle }, quizData.version);
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newDescription = e.target.value;
+    setQuizData(prev => ({ ...prev, description: newDescription }));
+    sendChange(ChangeType.QUIZ_UPDATED, { description: newDescription }, quizData.version);
+  };
+
+  const handlePublicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newIsPublic = e.target.checked;
+    setQuizData(prev => ({ ...prev, isPublic: newIsPublic }));
+    sendChange(ChangeType.QUIZ_UPDATED, { isPublic: newIsPublic }, quizData.version);
+  };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-          Title
-        </label>
-        <input
-          type="text"
-          id="title"
-          {...register('title')}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-        {errors.title && (
-          <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-        )}
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Edit Quiz</h2>
+        <UserPresence users={activeUsers} />
       </div>
 
-      <div>
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-          Description
-        </label>
-        <textarea
-          id="description"
-          {...register('description')}
-          rows={3}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-        />
-        {errors.description && (
-          <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
-        )}
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Title</label>
+            <input
+              type="text"
+              value={quizData.title}
+              onChange={handleTitleChange}
+              className="w-full p-2 border rounded"
+            />
+          </div>
 
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          id="isPublic"
-          {...register('isPublic')}
-          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-        />
-        <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-900">
-          Make this quiz public
-        </label>
-      </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Description</label>
+            <textarea
+              value={quizData.description}
+              onChange={handleDescriptionChange}
+              className="w-full p-2 border rounded"
+              rows={4}
+            />
+          </div>
 
-      <div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          {isLoading ? 'Saving...' : 'Save Quiz'}
-        </button>
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              checked={quizData.isPublic}
+              onChange={handlePublicChange}
+              className="mr-2"
+            />
+            <label className="text-sm font-medium">Make this quiz public</label>
+          </div>
+
+          {/* Question list and management components */}
+        </div>
+
+        <div className="md:col-span-1">
+          <QuizChat quizId={quizId} />
+        </div>
       </div>
-    </form>
+    </div>
   );
 }; 

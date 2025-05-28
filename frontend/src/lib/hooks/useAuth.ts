@@ -33,9 +33,9 @@ export function useAuth() {
     try {
       setError(null);
       const response = await authApi.login(data);
-      localStorage.setItem('authToken', response.token);
-      if (response.refresh_token) {
-        localStorage.setItem('refreshToken', response.refresh_token);
+      localStorage.setItem('authToken', response.accessToken);
+      if (response.refreshToken) {
+        localStorage.setItem('refreshToken', response.refreshToken);
       }
       setUser(response.user);
     } catch (err) {
@@ -48,9 +48,9 @@ export function useAuth() {
     try {
       setError(null);
       const response = await authApi.register(data);
-      localStorage.setItem('authToken', response.token);
-      if (response.refresh_token) {
-        localStorage.setItem('refreshToken', response.refresh_token);
+      localStorage.setItem('authToken', response.accessToken);
+      if (response.refreshToken) {
+        localStorage.setItem('refreshToken', response.refreshToken);
       }
       setUser(response.user);
     } catch (err: any) {
@@ -90,9 +90,9 @@ export function useAuth() {
 
     try {
       const response = await authApi.refreshToken({ refresh_token: refreshToken });
-      localStorage.setItem('authToken', response.token);
-      if (response.refresh_token) {
-        localStorage.setItem('refreshToken', response.refresh_token);
+      localStorage.setItem('authToken', response.accessToken);
+      if (response.refreshToken) {
+        localStorage.setItem('refreshToken', response.refreshToken);
       }
       setUser(response.user);
       return true;

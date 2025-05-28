@@ -12,6 +12,7 @@ import com.uznai.exception.UnauthorizedException;
 import com.uznai.mapper.QuestionMapper;
 import com.uznai.repository.QuestionRepository;
 import com.uznai.repository.QuizRepository;
+import com.uznai.security.UserPrincipal;
 import com.uznai.service.impl.QuestionServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,7 @@ class QuestionServiceTest {
     private QuestionServiceImpl questionService;
 
     private User testUser;
+    private UserPrincipal testUserPrincipal;
     private Quiz testQuiz;
     private Question testQuestion;
     private QuestionResponse testQuestionResponse;
@@ -52,6 +54,7 @@ class QuestionServiceTest {
         testUser = new User();
         testUser.setId(UUID.randomUUID());
         testUser.setUsername("testuser");
+        testUserPrincipal = UserPrincipal.create(testUser);
 
         testQuiz = new Quiz();
         testQuiz.setId(UUID.randomUUID());
@@ -87,7 +90,7 @@ class QuestionServiceTest {
         when(questionMapper.toResponse(any(Question.class))).thenReturn(testQuestionResponse);
 
         // Act
-        QuestionResponse result = questionService.createQuestion(testQuiz.getId(), request, testUser);
+        QuestionResponse result = questionService.createQuestion(testQuiz.getId(), request, testUserPrincipal);
 
         // Assert
         assertNotNull(result);
@@ -103,7 +106,7 @@ class QuestionServiceTest {
 
         // Act & Assert
         assertThrows(NotFoundException.class, () -> {
-            questionService.createQuestion(testQuiz.getId(), request, testUser);
+            questionService.createQuestion(testQuiz.getId(), request, testUserPrincipal);
         });
     }
 
@@ -121,7 +124,7 @@ class QuestionServiceTest {
         when(quizRepository.findById(any(UUID.class))).thenReturn(Optional.of(testQuiz));
 
         assertThrows(UnauthorizedException.class, () -> {
-            questionService.createQuestion(testQuiz.getId(), request, testUser);
+            questionService.createQuestion(testQuiz.getId(), request, testUserPrincipal);
         });
 
         verify(quizRepository).findById(testQuiz.getId());
@@ -142,7 +145,7 @@ class QuestionServiceTest {
         when(questionMapper.toResponse(any(Question.class))).thenReturn(testQuestionResponse);
 
         // Act
-        QuestionResponse result = questionService.updateQuestion(testQuestion.getId(), request, testUser);
+        QuestionResponse result = questionService.updateQuestion(testQuestion.getId(), request, testUserPrincipal);
 
         // Assert
         assertNotNull(result);
@@ -159,7 +162,7 @@ class QuestionServiceTest {
 
         // Act & Assert
         assertThrows(NotFoundException.class, () -> {
-            questionService.updateQuestion(testQuestion.getId(), request, testUser);
+            questionService.updateQuestion(testQuestion.getId(), request, testUserPrincipal);
         });
     }
 
@@ -178,7 +181,7 @@ class QuestionServiceTest {
         when(questionRepository.findById(any(UUID.class))).thenReturn(Optional.of(testQuestion));
 
         assertThrows(UnauthorizedException.class, () -> {
-            questionService.updateQuestion(testQuestion.getId(), request, testUser);
+            questionService.updateQuestion(testQuestion.getId(), request, testUserPrincipal);
         });
 
         verify(questionRepository).findById(testQuestion.getId());
@@ -194,7 +197,7 @@ class QuestionServiceTest {
 
         // Act & Assert
         assertThrows(UnauthorizedException.class, () -> {
-            questionService.updateQuestion(testQuestion.getId(), request, testUser);
+            questionService.updateQuestion(testQuestion.getId(), request, testUserPrincipal);
         });
     }
 
@@ -205,7 +208,7 @@ class QuestionServiceTest {
         doNothing().when(questionRepository).delete(any(Question.class));
 
         // Act
-        questionService.deleteQuestion(testQuestion.getId(), testUser);
+        questionService.deleteQuestion(testQuestion.getId(), testUserPrincipal);
 
         // Assert
         verify(questionRepository).delete(any(Question.class));
@@ -218,7 +221,7 @@ class QuestionServiceTest {
 
         // Act & Assert
         assertThrows(NotFoundException.class, () -> {
-            questionService.deleteQuestion(testQuestion.getId(), testUser);
+            questionService.deleteQuestion(testQuestion.getId(), testUserPrincipal);
         });
     }
 
@@ -231,7 +234,7 @@ class QuestionServiceTest {
         when(questionRepository.findById(any(UUID.class))).thenReturn(Optional.of(testQuestion));
 
         assertThrows(UnauthorizedException.class, () -> {
-            questionService.deleteQuestion(testQuestion.getId(), testUser);
+            questionService.deleteQuestion(testQuestion.getId(), testUserPrincipal);
         });
 
         verify(questionRepository).findById(testQuestion.getId());

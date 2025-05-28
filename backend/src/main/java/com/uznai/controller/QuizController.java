@@ -6,6 +6,7 @@ import com.uznai.dto.response.QuizResponse;
 import com.uznai.dto.response.QuizSummaryResponse;
 import com.uznai.entity.User;
 import com.uznai.service.QuizService;
+import com.uznai.security.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,30 +18,30 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/quizzes")
+@RequestMapping("/api/v1/quizzes")
 @RequiredArgsConstructor
 public class QuizController {
     private final QuizService quizService;
 
-    @GetMapping
+    @GetMapping("/me")
     public ResponseEntity<Page<QuizSummaryResponse>> getUserQuizzes(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             Pageable pageable) {
-        return ResponseEntity.ok(quizService.getUserQuizzes(user, pageable));
+        return ResponseEntity.ok(quizService.getUserQuizzes(userPrincipal, pageable));
     }
 
     @GetMapping("/created")
     public ResponseEntity<Page<QuizSummaryResponse>> getCreatedQuizzes(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             Pageable pageable) {
-        return ResponseEntity.ok(quizService.getCreatedQuizzes(user, pageable));
+        return ResponseEntity.ok(quizService.getCreatedQuizzes(userPrincipal, pageable));
     }
 
     @GetMapping("/collaborated")
     public ResponseEntity<Page<QuizSummaryResponse>> getCollaboratedQuizzes(
-            @AuthenticationPrincipal User user,
+            @AuthenticationPrincipal UserPrincipal userPrincipal,
             Pageable pageable) {
-        return ResponseEntity.ok(quizService.getCollaboratedQuizzes(user, pageable));
+        return ResponseEntity.ok(quizService.getCollaboratedQuizzes(userPrincipal, pageable));
     }
 
     @GetMapping("/public")
@@ -51,30 +52,38 @@ public class QuizController {
     @GetMapping("/{quizId}")
     public ResponseEntity<QuizResponse> getQuizById(
             @PathVariable UUID quizId,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(quizService.getQuizById(quizId, user));
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(quizService.getQuizById(quizId, userPrincipal));
     }
 
     @PostMapping
     public ResponseEntity<QuizResponse> createQuiz(
             @Valid @RequestBody CreateQuizRequest request,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(quizService.createQuiz(request, user));
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        UUID userId = userPrincipal.getId();
+        return ResponseEntity.ok(quizService.createQuiz(request, userPrincipal));
     }
 
     @PutMapping("/{quizId}")
     public ResponseEntity<QuizResponse> updateQuiz(
             @PathVariable UUID quizId,
             @Valid @RequestBody UpdateQuizRequest request,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(quizService.updateQuiz(quizId, request, user));
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(quizService.updateQuiz(quizId, request, userPrincipal));
     }
 
     @DeleteMapping("/{quizId}")
     public ResponseEntity<Void> deleteQuiz(
             @PathVariable UUID quizId,
-            @AuthenticationPrincipal User user) {
-        quizService.deleteQuiz(quizId, user);
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        quizService.deleteQuiz(quizId, userPrincipal);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/users/{userId}/quizzes")
+    public ResponseEntity<Page<QuizSummaryResponse>> getPublicQuizzesByUser(
+            @PathVariable UUID userId,
+            Pageable pageable) {
+        return ResponseEntity.ok(quizService.getPublicQuizzesByUser(userId, pageable));
     }
 } 

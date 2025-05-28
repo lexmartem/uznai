@@ -69,4 +69,33 @@ export const useQuiz = (id: string) => {
     updateQuiz: updateQuizMutation.mutate,
     isUpdating: updateQuizMutation.isPending,
   };
+};
+
+export const usePublicQuizzes = (page: number = 0, size: number = 10) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['publicQuizzes', page, size],
+    queryFn: () => quizService.getAllPublicQuizzes(page, size),
+  });
+  return {
+    quizzes: data?.content || [],
+    totalPages: data?.totalPages || 0,
+    totalElements: data?.totalElements || 0,
+    isLoading,
+    error,
+  };
+};
+
+export const useUserPublicQuizzes = (userId: string, page: number = 0, size: number = 10) => {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['userPublicQuizzes', userId, page, size],
+    queryFn: () => quizService.getPublicQuizzesByUser(userId, page, size),
+    enabled: !!userId,
+  });
+  return {
+    quizzes: data?.content || [],
+    totalPages: data?.totalPages || 0,
+    totalElements: data?.totalElements || 0,
+    isLoading,
+    error,
+  };
 }; 

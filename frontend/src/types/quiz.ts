@@ -97,4 +97,32 @@ export interface CreateAnswerRequest {
 
 export interface UpdateAnswerRequest extends CreateAnswerRequest {
   version: number;
+}
+
+export enum ChangeType {
+    QUIZ_CREATED = 'QUIZ_CREATED',
+    QUIZ_UPDATED = 'QUIZ_UPDATED',
+    QUESTION_ADDED = 'QUESTION_ADDED',
+    QUESTION_UPDATED = 'QUESTION_UPDATED',
+    QUESTION_DELETED = 'QUESTION_DELETED',
+    ANSWER_ADDED = 'ANSWER_ADDED',
+    ANSWER_UPDATED = 'ANSWER_UPDATED',
+    ANSWER_DELETED = 'ANSWER_DELETED',
+    COLLABORATOR_ADDED = 'COLLABORATOR_ADDED',
+    COLLABORATOR_REMOVED = 'COLLABORATOR_REMOVED',
+    CHAT_MESSAGE = 'CHAT_MESSAGE'
+}
+
+export interface QuizChangeRequest {
+    changeType: ChangeType;
+    changeData: string;
+    version: number;
+}
+
+export interface QuizData {
+    title: string;
+    description: string;
+    isPublic: boolean;
+    questions: any[]; // TODO: Define Question type
+    version: number;
 } 

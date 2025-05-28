@@ -14,6 +14,7 @@ public interface AnswerMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "question", ignore = true)
     @Mapping(target = "version", ignore = true)
+    @Mapping(source = "isCorrect", target = "correct")
     Answer toEntity(CreateAnswerRequest request);
 
     AnswerResponse toResponse(Answer answer);

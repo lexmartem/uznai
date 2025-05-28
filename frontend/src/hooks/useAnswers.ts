@@ -2,12 +2,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import quizService from '../services/quiz-service';
 import { Answer, CreateAnswerRequest, UpdateAnswerRequest } from '../types/quiz';
 
-export const useAnswers = (questionId: string) => {
+export const useAnswers = (quizId: string, questionId: string) => {
   const queryClient = useQueryClient();
 
   const createAnswerMutation = useMutation({
     mutationFn: (answer: CreateAnswerRequest) => 
-      quizService.createAnswer(questionId, answer),
+      quizService.createAnswer(quizId, questionId, answer),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['questions'] });
     },

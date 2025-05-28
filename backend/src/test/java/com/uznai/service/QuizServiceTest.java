@@ -11,6 +11,7 @@ import com.uznai.mapper.QuizMapper;
 import com.uznai.repository.QuizRepository;
 import com.uznai.repository.UserRepository;
 import com.uznai.service.impl.QuizServiceImpl;
+import com.uznai.security.UserPrincipal;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +42,7 @@ class QuizServiceTest {
     private QuizServiceImpl quizService;
 
     private User testUser;
+    private UserPrincipal testUserPrincipal;
     private Quiz testQuiz;
     private QuizResponse testQuizResponse;
 
@@ -50,13 +52,15 @@ class QuizServiceTest {
         testUser.setId(UUID.randomUUID());
         testUser.setUsername("testuser");
 
+        testUserPrincipal = UserPrincipal.create(testUser);
+
         testQuiz = new Quiz();
         testQuiz.setId(UUID.randomUUID());
         testQuiz.setTitle("Test Quiz");
         testQuiz.setDescription("Test Description");
         testQuiz.setCreator(testUser);
         testQuiz.setPublic(true);
-        testQuiz.setVersion(1);
+        testQuiz.setVersion(1L);
 
         testQuizResponse = new QuizResponse();
         testQuizResponse.setId(testQuiz.getId());
@@ -79,7 +83,7 @@ class QuizServiceTest {
         when(quizRepository.save(testQuiz)).thenReturn(testQuiz);
         when(quizMapper.toResponse(testQuiz)).thenReturn(testQuizResponse);
 
-        QuizResponse result = quizService.createQuiz(request, testUser);
+        QuizResponse result = quizService.createQuiz(request, testUserPrincipal);
 
         assertNotNull(result);
         assertEquals(testQuizResponse, result);
@@ -101,7 +105,7 @@ class QuizServiceTest {
         when(userRepository.findById(testUser.getId())).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> {
-            quizService.createQuiz(request, testUser);
+            quizService.createQuiz(request, testUserPrincipal);
         });
 
         verify(userRepository).findById(testUser.getId());
@@ -110,21 +114,18 @@ class QuizServiceTest {
 
     @Test
     void updateQuiz_ShouldUpdateExistingQuiz() {
-        // Arrange
         UpdateQuizRequest request = new UpdateQuizRequest();
         request.setTitle("Updated Quiz");
         request.setDescription("Updated Description");
         request.setIsPublic(false);
-        request.setVersion(1);
+        request.setVersion(1L);
 
         when(quizRepository.findById(any(UUID.class))).thenReturn(Optional.of(testQuiz));
         when(quizRepository.save(any(Quiz.class))).thenReturn(testQuiz);
         when(quizMapper.toResponse(any(Quiz.class))).thenReturn(testQuizResponse);
 
-        // Act
-        QuizResponse result = quizService.updateQuiz(testQuiz.getId(), request, testUser);
+        QuizResponse result = quizService.updateQuiz(testQuiz.getId(), request, testUserPrincipal);
 
-        // Assert
         assertNotNull(result);
         assertEquals(testQuizResponse.getId(), result.getId());
         verify(quizRepository).save(any(Quiz.class));
@@ -132,79 +133,68 @@ class QuizServiceTest {
 
     @Test
     void updateQuiz_ShouldThrowNotFoundException_WhenQuizNotFound() {
-        // Arrange
         UpdateQuizRequest request = new UpdateQuizRequest();
-        request.setVersion(1);
+        request.setVersion(1L);
         when(quizRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(NotFoundException.class, () -> {
-            quizService.updateQuiz(testQuiz.getId(), request, testUser);
+            quizService.updateQuiz(testQuiz.getId(), request, testUserPrincipal);
         });
     }
 
     @Test
     void updateQuiz_ShouldThrowUnauthorizedException_WhenUserNotCreator() {
-        // Arrange
         UpdateQuizRequest request = new UpdateQuizRequest();
-        request.setVersion(1);
+        request.setVersion(1L);
         User differentUser = new User();
         differentUser.setId(UUID.randomUUID());
+        UserPrincipal differentUserPrincipal = UserPrincipal.create(differentUser);
         when(quizRepository.findById(any(UUID.class))).thenReturn(Optional.of(testQuiz));
 
-        // Act & Assert
         assertThrows(UnauthorizedException.class, () -> {
-            quizService.updateQuiz(testQuiz.getId(), request, differentUser);
+            quizService.updateQuiz(testQuiz.getId(), request, differentUserPrincipal);
         });
     }
 
     @Test
     void updateQuiz_ShouldThrowUnauthorizedException_WhenVersionMismatch() {
-        // Arrange
         UpdateQuizRequest request = new UpdateQuizRequest();
-        request.setVersion(2); // Different from testQuiz's version (1)
+        request.setVersion(2L);
         when(quizRepository.findById(any(UUID.class))).thenReturn(Optional.of(testQuiz));
 
-        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> {
-            quizService.updateQuiz(testQuiz.getId(), request, testUser);
+            quizService.updateQuiz(testQuiz.getId(), request, testUserPrincipal);
         });
     }
 
     @Test
     void deleteQuiz_ShouldDeleteQuiz() {
-        // Arrange
         when(quizRepository.findById(any(UUID.class))).thenReturn(Optional.of(testQuiz));
         doNothing().when(quizRepository).delete(any(Quiz.class));
 
-        // Act
-        quizService.deleteQuiz(testQuiz.getId(), testUser);
+        quizService.deleteQuiz(testQuiz.getId(), testUserPrincipal);
 
-        // Assert
         verify(quizRepository).delete(any(Quiz.class));
     }
 
     @Test
     void deleteQuiz_ShouldThrowNotFoundException_WhenQuizNotFound() {
-        // Arrange
         when(quizRepository.findById(any(UUID.class))).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(NotFoundException.class, () -> {
-            quizService.deleteQuiz(testQuiz.getId(), testUser);
+            quizService.deleteQuiz(testQuiz.getId(), testUserPrincipal);
         });
     }
 
     @Test
     void deleteQuiz_ShouldThrowUnauthorizedException_WhenUserNotCreator() {
-        // Arrange
         User differentUser = new User();
         differentUser.setId(UUID.randomUUID());
+        UserPrincipal differentUserPrincipal = UserPrincipal.create(differentUser);
         when(quizRepository.findById(any(UUID.class))).thenReturn(Optional.of(testQuiz));
 
-        // Act & Assert
         assertThrows(UnauthorizedException.class, () -> {
-            quizService.deleteQuiz(testQuiz.getId(), differentUser);
+            quizService.deleteQuiz(testQuiz.getId(), differentUserPrincipal);
         });
     }
 } 

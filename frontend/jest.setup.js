@@ -1,6 +1,11 @@
 // Learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
+// Add TextEncoder/TextDecoder polyfills
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 // Mock Next.js router
 jest.mock('next/router', () => ({
   useRouter() {
@@ -90,6 +95,15 @@ HTMLFormElement.prototype.requestSubmit = function() {
   const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
   this.dispatchEvent(submitEvent);
 };
+// Mock WebSocket service globally for all tests
+jest.mock('./src/services/websocket-service', () => ({
+  websocketService: {
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+    subscribeToQuiz: jest.fn().mockReturnValue(() => {}),
+    sendQuizChange: jest.fn(),
+  },
+}));
 
 // Suppress console errors during tests
 const originalError = console.error;

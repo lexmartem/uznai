@@ -16,17 +16,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.uznai.security.UserPrincipal;
 
 import java.util.UUID;
 
 public interface QuizService {
-    Page<QuizSummaryResponse> getUserQuizzes(User user, Pageable pageable);
-    Page<QuizSummaryResponse> getCreatedQuizzes(User user, Pageable pageable);
-    Page<QuizSummaryResponse> getCollaboratedQuizzes(User user, Pageable pageable);
+    Page<QuizSummaryResponse> getUserQuizzes(UserPrincipal userPrincipal, Pageable pageable);
+    Page<QuizSummaryResponse> getCreatedQuizzes(UserPrincipal userPrincipal, Pageable pageable);
+    Page<QuizSummaryResponse> getCollaboratedQuizzes(UserPrincipal userPrincipal, Pageable pageable);
     Page<QuizSummaryResponse> getPublicQuizzes(Pageable pageable);
-    QuizResponse getQuizById(UUID quizId, User user);
-    QuizResponse createQuiz(CreateQuizRequest request, User user);
-    QuizResponse updateQuiz(UUID quizId, UpdateQuizRequest request, User user);
-    void deleteQuiz(UUID quizId, User user);
+    Page<QuizSummaryResponse> getPublicQuizzesByUser(UUID userId, Pageable pageable);
+    QuizResponse getQuizById(UUID quizId, UserPrincipal userPrincipal);
+    QuizResponse createQuiz(CreateQuizRequest request, UserPrincipal userPrincipal);
+    QuizResponse updateQuiz(UUID quizId, UpdateQuizRequest request, UserPrincipal userPrincipal);
+    void deleteQuiz(UUID quizId, UserPrincipal userPrincipal);
 }
 

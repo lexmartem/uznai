@@ -26,8 +26,10 @@ public interface QuizRepository extends JpaRepository<Quiz, UUID> {
     @Query("SELECT q FROM Quiz q JOIN q.collaborators c WHERE c.user = :user")
     Page<Quiz> findCollaboratedQuizzes(@Param("user") User user, Pageable pageable);
     
-    @Query("SELECT q FROM Quiz q WHERE q.creator = :creator OR q.isPublic = true OR EXISTS (SELECT 1 FROM q.collaborators c WHERE c.user = :user)")
+    @Query("SELECT q FROM Quiz q WHERE q.creator = :user OR q.isPublic = true OR EXISTS (SELECT 1 FROM q.collaborators c WHERE c.user = :user)")
     Page<Quiz> findUserQuizzes(@Param("user") User user, Pageable pageable);
     
     boolean existsByTitleAndCreator(String title, User creator);
+
+    Page<Quiz> findByCreatorIdAndIsPublic(UUID creatorId, boolean isPublic, Pageable pageable);
 } 
