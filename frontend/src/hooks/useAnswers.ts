@@ -1,39 +1,86 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import quizService from '../services/quiz-service';
-import { Answer, CreateAnswerRequest, UpdateAnswerRequest } from '../types/quiz';
+import { useState, useEffect } from 'react';
+import { Answer, CreateAnswerRequest, QuizError } from '@/types/quiz';
+import { ApiClient } from '@/lib/api/client';
 
-export const useAnswers = (quizId: string, questionId: string) => {
-  const queryClient = useQueryClient();
+interface UseAnswersResult {
+  answers: Answer[];
+  isLoading: boolean;
+  error: QuizError | null;
+  createAnswer: (data: CreateAnswerRequest, callbacks?: {
+    onSuccess?: (answer: Answer) => void;
+    onError?: (error: QuizError) => void;
+  }) => Promise<void>;
+  deleteAnswer: (id: string) => Promise<void>;
+  isCreating: boolean;
+}
 
-  const createAnswerMutation = useMutation({
-    mutationFn: (answer: CreateAnswerRequest) => 
-      quizService.createAnswer(quizId, questionId, answer),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions'] });
-    },
-  });
+export function useAnswers(quizId: string, questionId: string): UseAnswersResult {
+  const [answers, setAnswers] = useState<Answer[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<QuizError | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const updateAnswerMutation = useMutation({
-    mutationFn: ({ id, answer }: { id: string; answer: UpdateAnswerRequest }) => 
-      quizService.updateAnswer(id, answer),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions'] });
-    },
-  });
+  useEffect(() => {
+    fetchAnswers();
+  }, [quizId, questionId]);
 
-  const deleteAnswerMutation = useMutation({
-    mutationFn: (id: string) => quizService.deleteAnswer(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions'] });
-    },
-  });
+  const fetchAnswers = async () => {
+    try {
+      setIsLoading(true);
+      const response = await ApiClient.get<Answer[]>(`/api/v1/quizzes/${quizId}/questions/${questionId}/answers`);
+      setAnswers(response);
+      setError(null);
+    } catch (err) {
+      setError({
+        message: 'Failed to fetch answers',
+        code: 'FETCH_ERROR'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const createAnswer = async (data: CreateAnswerRequest, callbacks?: {
+    onSuccess?: (answer: Answer) => void;
+    onError?: (error: QuizError) => void;
+  }) => {
+    try {
+      setIsCreating(true);
+      const response = await ApiClient.post<Answer>(`/api/v1/quizzes/${quizId}/questions/${questionId}/answers`, data);
+      setAnswers(prev => [...prev, response]);
+      callbacks?.onSuccess?.(response);
+      setError(null);
+    } catch (err) {
+      const error = {
+        message: 'Failed to create answer',
+        code: 'CREATE_ERROR'
+      };
+      setError(error);
+      callbacks?.onError?.(error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const deleteAnswer = async (id: string) => {
+    try {
+      await ApiClient.delete(`/api/v1/quizzes/${quizId}/questions/${questionId}/answers/${id}`);
+      setAnswers(prev => prev.filter(answer => answer.id !== id));
+      setError(null);
+    } catch (err) {
+      setError({
+        message: 'Failed to delete answer',
+        code: 'DELETE_ERROR'
+      });
+    }
+  };
 
   return {
-    createAnswer: createAnswerMutation.mutate,
-    updateAnswer: updateAnswerMutation.mutate,
-    deleteAnswer: deleteAnswerMutation.mutate,
-    isCreating: createAnswerMutation.isPending,
-    isUpdating: updateAnswerMutation.isPending,
-    isDeleting: deleteAnswerMutation.isPending,
+    answers,
+    isLoading,
+    error,
+    createAnswer,
+    deleteAnswer,
+    isCreating
   };
-}; 
+} 

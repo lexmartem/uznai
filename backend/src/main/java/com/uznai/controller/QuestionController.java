@@ -55,4 +55,22 @@ public class QuestionController {
         AnswerResponse answer = questionService.createAnswer(quizId, questionId, request, userPrincipal);
         return ResponseEntity.ok(answer);
     }
+
+    @GetMapping("/{questionId}/answers")
+    public ResponseEntity<List<AnswerResponse>> getAnswersByQuestionId(
+            @PathVariable UUID quizId,
+            @PathVariable UUID questionId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(questionService.getAnswersByQuestionId(questionId, userPrincipal));
+    }
+
+    @DeleteMapping("/{questionId}/answers/{answerId}")
+    public ResponseEntity<Void> deleteAnswer(
+            @PathVariable UUID quizId,
+            @PathVariable UUID questionId,
+            @PathVariable UUID answerId,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        questionService.deleteAnswer(answerId, userPrincipal);
+        return ResponseEntity.noContent().build();
+    }
 } 

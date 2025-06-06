@@ -1,47 +1,86 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import quizService from '../services/quiz-service';
-import { Question, CreateQuestionRequest, UpdateQuestionRequest } from '../types/quiz';
+import { useState, useEffect } from 'react';
+import { Question, CreateQuestionRequest, QuizError } from '../types/quiz';
+import { ApiClient } from '../lib/api/client';
 
-export const useQuestions = (quizId: string) => {
-  const queryClient = useQueryClient();
+interface UseQuestionsResult {
+  questions: Question[];
+  isLoading: boolean;
+  error: QuizError | null;
+  createQuestion: (data: CreateQuestionRequest, callbacks?: {
+    onSuccess?: (question: Question) => void;
+    onError?: (error: QuizError) => void;
+  }) => Promise<void>;
+  deleteQuestion: (id: string) => Promise<void>;
+  isCreating: boolean;
+}
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['questions', quizId],
-    queryFn: () => quizService.getQuestionsByQuizId(quizId),
-  });
+export function useQuestions(quizId: string): UseQuestionsResult {
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<QuizError | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const createQuestionMutation = useMutation({
-    mutationFn: (question: CreateQuestionRequest) => 
-      quizService.createQuestion(quizId, question),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions', quizId] });
-    },
-  });
+  useEffect(() => {
+    fetchQuestions();
+  }, [quizId]);
 
-  const updateQuestionMutation = useMutation({
-    mutationFn: ({ id, question }: { id: string; question: UpdateQuestionRequest }) => 
-      quizService.updateQuestion(id, question),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions', quizId] });
-    },
-  });
+  const fetchQuestions = async () => {
+    try {
+      setIsLoading(true);
+      const response = await ApiClient.get<Question[]>(`/api/v1/quizzes/${quizId}/questions`);
+      setQuestions(response);
+      setError(null);
+    } catch (err) {
+      setError({
+        message: 'Failed to fetch questions',
+        code: 'FETCH_ERROR'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const deleteQuestionMutation = useMutation({
-    mutationFn: (id: string) => quizService.deleteQuestion(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['questions', quizId] });
-    },
-  });
+  const createQuestion = async (data: CreateQuestionRequest, callbacks?: {
+    onSuccess?: (question: Question) => void;
+    onError?: (error: QuizError) => void;
+  }) => {
+    try {
+      setIsCreating(true);
+      const response = await ApiClient.post<Question>(`/api/v1/quizzes/${quizId}/questions`, data);
+      setQuestions(prev => [...prev, response]);
+      callbacks?.onSuccess?.(response);
+      setError(null);
+    } catch (err) {
+      const error = {
+        message: 'Failed to create question',
+        code: 'CREATE_ERROR'
+      };
+      setError(error);
+      callbacks?.onError?.(error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const deleteQuestion = async (id: string) => {
+    try {
+      await ApiClient.delete(`/api/v1/quizzes/${quizId}/questions/${id}`);
+      setQuestions(prev => prev.filter(question => question.id !== id));
+      setError(null);
+    } catch (err) {
+      setError({
+        message: 'Failed to delete question',
+        code: 'DELETE_ERROR'
+      });
+    }
+  };
 
   return {
-    questions: data || [],
+    questions,
     isLoading,
     error,
-    createQuestion: createQuestionMutation.mutate,
-    updateQuestion: updateQuestionMutation.mutate,
-    deleteQuestion: deleteQuestionMutation.mutate,
-    isCreating: createQuestionMutation.isPending,
-    isUpdating: updateQuestionMutation.isPending,
-    isDeleting: deleteQuestionMutation.isPending,
+    createQuestion,
+    deleteQuestion,
+    isCreating
   };
-}; 
+} 

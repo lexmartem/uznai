@@ -141,4 +141,37 @@ public class QuestionServiceImpl implements QuestionService {
         Answer savedAnswer = answerRepository.save(answer);
         return answerMapper.toResponse(savedAnswer);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AnswerResponse> getAnswersByQuestionId(UUID questionId, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new NotFoundException("Question not found"));
+
+        if (!question.getQuiz().getCreator().equals(user) && !question.getQuiz().isPublic() && 
+            !question.getQuiz().getCollaborators().stream().anyMatch(c -> c.getUser().equals(user))) {
+            throw new UnauthorizedException("You don't have access to this quiz");
+        }
+
+        return answerRepository.findByQuestionOrderByOrderIndex(question).stream()
+                .map(answerMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void deleteAnswer(UUID answerId, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        Answer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new NotFoundException("Answer not found"));
+
+        if (!answer.getQuestion().getQuiz().getCreator().equals(user)) {
+            throw new UnauthorizedException("Only quiz creator can delete answers");
+        }
+
+        answerRepository.delete(answer);
+    }
 } 

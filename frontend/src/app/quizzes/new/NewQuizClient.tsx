@@ -1,13 +1,13 @@
 'use client';
 
-import { useQuizzes } from '../../../hooks/useQuizzes';
-import { CreateQuizForm } from '../../../components/quiz/CreateQuizForm';
+import { useQuizzes } from '@/hooks/useQuizzes';
+import { CreateQuizForm } from '@/components/quiz/CreateQuizForm';
 import { useRouter } from 'next/navigation';
-import { Quiz } from '../../../types/quiz';
+import { Quiz, QuizError } from '@/types/quiz';
 
 export function NewQuizClient() {
   const router = useRouter();
-  const { createQuiz, isCreating, error } = useQuizzes();
+  const { createQuiz, isLoading, error } = useQuizzes();
 
   const handleSubmit = async (data: any) => {
     try {
@@ -15,7 +15,7 @@ export function NewQuizClient() {
         onSuccess: (quiz: Quiz) => {
           router.push(`/quizzes/${quiz.id}`);
         },
-        onError: (error) => {
+        onError: (error: QuizError) => {
           console.error('Failed to create quiz:', error);
         }
       });
@@ -47,7 +47,7 @@ export function NewQuizClient() {
         </div>
       )}
 
-      <CreateQuizForm onSubmit={handleSubmit} isLoading={isCreating} />
+      <CreateQuizForm onSubmit={handleSubmit} isLoading={isLoading} />
     </div>
   );
 } 

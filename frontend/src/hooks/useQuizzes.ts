@@ -1,6 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import quizService from '../services/quiz-service';
 import { Quiz, QuizSummary, CreateQuizRequest, UpdateQuizRequest } from '../types/quiz';
+import { useState, useEffect } from 'react';
+import { ApiClient } from '../lib/api/client';
+
+interface QuizError {
+  message: string;
+  code: string;
+}
 
 export const useQuizzes = (page: number = 0, size: number = 10) => {
   const queryClient = useQueryClient();
@@ -98,4 +105,87 @@ export const useUserPublicQuizzes = (userId: string, page: number = 0, size: num
     isLoading,
     error,
   };
-}; 
+};
+
+interface UseQuizzesResult {
+  quizzes: Quiz[];
+  isLoading: boolean;
+  error: QuizError | null;
+  createQuiz: (data: CreateQuizRequest, callbacks?: {
+    onSuccess?: (quiz: Quiz) => void;
+    onError?: (error: QuizError) => void;
+  }) => Promise<void>;
+  deleteQuiz: (id: string) => Promise<void>;
+  isCreating: boolean;
+}
+
+export function useQuizzesLegacy(): UseQuizzesResult {
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<QuizError | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+
+  useEffect(() => {
+    fetchQuizzes();
+  }, []);
+
+  const fetchQuizzes = async () => {
+    try {
+      setIsLoading(true);
+      const response = await ApiClient.get<Quiz[]>('/quizzes');
+      setQuizzes(response);
+      setError(null);
+    } catch (err) {
+      setError({
+        message: 'Failed to fetch quizzes',
+        code: 'FETCH_ERROR'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const createQuiz = async (data: CreateQuizRequest, callbacks?: {
+    onSuccess?: (quiz: Quiz) => void;
+    onError?: (error: QuizError) => void;
+  }) => {
+    try {
+      setIsCreating(true);
+      const response = await ApiClient.post<Quiz>('/quizzes', data);
+      setQuizzes(prev => [...prev, response]);
+      callbacks?.onSuccess?.(response);
+      setError(null);
+    } catch (err) {
+      const error = {
+        message: 'Failed to create quiz',
+        code: 'CREATE_ERROR'
+      };
+      setError(error);
+      callbacks?.onError?.(error);
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const deleteQuiz = async (id: string) => {
+    try {
+      await ApiClient.delete(`/quizzes/${id}`);
+      setQuizzes(prev => prev.filter(quiz => quiz.id !== id));
+      setError(null);
+    } catch (err) {
+      setError({
+        message: 'Failed to delete quiz',
+        code: 'DELETE_ERROR'
+      });
+    }
+  };
+
+  return {
+    quizzes,
+    isLoading,
+    error,
+    createQuiz,
+    deleteQuiz,
+    isCreating
+  };
+} 

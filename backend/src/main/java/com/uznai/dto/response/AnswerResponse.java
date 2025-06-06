@@ -8,7 +8,7 @@ import java.util.UUID;
 public class AnswerResponse {
     private UUID id;
     private String answerText;
-    private boolean isCorrect;
+    private boolean correct;
     private Integer orderIndex;
     private String imageUrl;
     private String codeSnippet;

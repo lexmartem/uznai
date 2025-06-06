@@ -1,10 +1,10 @@
 'use client';
 
-import { useQuiz, useQuizzes } from '../../../hooks/useQuizzes';
-import { useQuestions } from '../../../hooks/useQuestions';
-import { QuestionForm } from '../../../components/quiz/QuestionForm';
-import { AnswerForm } from '../../../components/quiz/AnswerForm';
-import { useAnswers } from '../../../hooks/useAnswers';
+import { useQuiz, useQuizzes } from '@/hooks/useQuizzes';
+import { useQuestions } from '@/hooks/useQuestions';
+import { QuestionForm } from '@/components/quiz/QuestionForm';
+import { AnswerForm } from '@/components/quiz/AnswerForm';
+import { useAnswers } from '@/hooks/useAnswers';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -90,7 +90,7 @@ export function QuizDetailClient({ quizId }: QuizDetailClientProps) {
                   <div
                     key={answer.id}
                     className={`rounded-lg border p-2 ${
-                      answer.isCorrect ? 'border-green-500 bg-green-50' : 'border-gray-200'
+                      answer.correct ? 'border-green-500 bg-green-50' : 'border-gray-200'
                     }`}
                   >
                     <p className="text-sm text-gray-900">{answer.answerText}</p>

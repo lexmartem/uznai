@@ -9,6 +9,7 @@ import com.uznai.security.UserPrincipal;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public interface QuestionService {
     List<QuestionResponse> getQuestionsByQuizId(UUID quizId, UserPrincipal userPrincipal);
@@ -16,4 +17,6 @@ public interface QuestionService {
     QuestionResponse updateQuestion(UUID questionId, UpdateQuestionRequest request, UserPrincipal userPrincipal);
     void deleteQuestion(UUID questionId, UserPrincipal userPrincipal);
     AnswerResponse createAnswer(UUID quizId, UUID questionId, CreateAnswerRequest request, UserPrincipal userPrincipal);
+    List<AnswerResponse> getAnswersByQuestionId(UUID questionId, UserPrincipal userPrincipal);
+    void deleteAnswer(UUID answerId, UserPrincipal userPrincipal);
 } 

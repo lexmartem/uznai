@@ -8,8 +8,9 @@ export type QuestionType =
 
 export interface Answer {
   id: string;
+  questionId: string;
   answerText: string;
-  isCorrect: boolean;
+  correct: boolean;
   orderIndex: number;
   imageUrl?: string;
   codeSnippet?: string;
@@ -21,6 +22,7 @@ export interface Answer {
 
 export interface Question {
   id: string;
+  quizId: string;
   questionText: string;
   questionType: QuestionType;
   orderIndex: number;
@@ -46,7 +48,7 @@ export interface Quiz {
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
-  creatorId: string;
+  createdBy: string;
   collaborators: QuizCollaborator[];
   questions: Question[];
   version: number;
@@ -68,7 +70,7 @@ export interface CreateQuizRequest {
   title: string;
   description: string;
   isPublic: boolean;
-  collaborators: string[];
+  collaborators?: string[];
 }
 
 export interface UpdateQuizRequest extends CreateQuizRequest {
@@ -89,7 +91,7 @@ export interface UpdateQuestionRequest extends CreateQuestionRequest {
 
 export interface CreateAnswerRequest {
   answerText: string;
-  isCorrect: boolean;
+  correct: boolean;
   orderIndex: number;
   imageUrl?: string;
   codeSnippet?: string;
@@ -125,4 +127,9 @@ export interface QuizData {
     isPublic: boolean;
     questions: any[]; // TODO: Define Question type
     version: number;
+}
+
+export interface QuizError {
+  message: string;
+  code?: string;
 } 

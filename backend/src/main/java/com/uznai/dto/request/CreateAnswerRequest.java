@@ -10,7 +10,7 @@ public class CreateAnswerRequest {
     private String answerText;
     
     @NotNull(message = "Correct status is required")
-    private Boolean isCorrect;
+    private Boolean correct;
     
     @NotNull(message = "Order index is required")
     private Integer orderIndex;
