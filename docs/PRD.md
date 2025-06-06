@@ -30,7 +30,7 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - React.js with Next.js framework
 - Responsive design with Tailwind CSS
 - State management with React Context API and TanStack Query
-- SockJS/STOMP client for real-time communication
+- SockJS/STOMP client for real-time quiz sessions only
 - Form validation and handling with comprehensive error feedback
 - Progressive Web App capabilities
 - Browser compatibility: Latest versions of Chrome, Firefox, Safari, Edge
@@ -42,7 +42,7 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Java Spring Boot application with Java 21
 - Spring WebMVC for RESTful API endpoints
 - Spring Security for authentication and authorization
-- Spring WebSocket with STOMP for real-time features
+- Spring WebSocket with STOMP for real-time quiz sessions only
 - Spring Data JPA for database interactions
 - JWT token-based authentication with refresh tokens
 - Apache PDFBox for PDF processing
@@ -50,8 +50,7 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Rate limiting with Bucket4j
 - Logging with SLF4J and Logback
 - Virtual Threads for improved scalability
-- Concurrent profile update handling
-- Real-time session management
+- Real-time session management for quiz taking
 
 ### Database
 - PostgreSQL for relational data storage
@@ -127,12 +126,12 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Concurrent update handling for profile management
 
 ### Real-time Communication
-- Spring WebSocket with STOMP messaging protocol
+- Spring WebSocket with STOMP messaging protocol for quiz sessions only
 - SockJS for client-side compatibility
 - Session management with Spring Session
-- User presence tracking with WebSocket events
+- User presence tracking with WebSocket events during quiz sessions
 - Virtual Threads for efficient WebSocket connection handling
-- Real-time profile update notifications
+- Real-time quiz session updates and leaderboards
 
 ### Authentication & Security
 - Spring Security with JWT token authentication
@@ -144,12 +143,12 @@ Current quiz creation platforms lack intuitive, AI-powered generation tools and 
 - Concurrent session management
 
 ### Live Sessions Implementation
-- WebSocket topics for session rooms
-- Pub/Sub pattern for broadcasting updates
+- WebSocket topics for quiz session rooms
+- Pub/Sub pattern for broadcasting quiz updates
 - Server-side session state management
 - Client synchronization with server timing
-- Virtual Threads for handling concurrent connections efficiently
-- Real-time leaderboard updates
+- Virtual Threads for handling concurrent quiz session connections efficiently
+- Real-time leaderboard updates during quiz sessions
 
 ## Implementation Phases
 
