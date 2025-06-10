@@ -15,13 +15,13 @@ export function QuizProgress({ session, currentQuestionIndex, timeRemaining }: Q
     const seconds = timeRemaining % 60;
 
     return (
-        <Card className="w-full max-w-2xl mx-auto mb-4">
+        <Card className="w-full max-w-2xl mx-auto mb-4 shadow-lg rounded-xl bg-yellow-100">
             <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-purple-700 font-bold">
                         Question {currentQuestionIndex + 1} of {session.questionCount}
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-blue-700 font-bold">
                         <Clock className="h-4 w-4" />
                         <span>
                             {minutes.toString().padStart(2, '0')}:
@@ -29,7 +29,7 @@ export function QuizProgress({ session, currentQuestionIndex, timeRemaining }: Q
                         </span>
                     </div>
                 </div>
-                <Progress value={progress} className="h-2" />
+                <Progress value={progress} className="h-2 bg-green-300" />
             </CardContent>
         </Card>
     );

@@ -115,7 +115,7 @@
 
 @layer base {
   * {
-    @apply border-[var(--border)] outline outline-[var(--ring)] outline-offset-0;
+    /* Removed global border and outline to prevent unwanted gray lines */
   }
   body {
     @apply bg-background text-foreground;

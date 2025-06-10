@@ -56,16 +56,16 @@ export const QuizChat: React.FC<QuizChatProps> = ({ quizId }) => {
     };
 
     return (
-        <div className="flex flex-col h-[300px] border rounded-lg">
-            <div className="p-2 border-b">
-                <h3 className="font-semibold">Chat</h3>
+        <div className="flex flex-col h-[300px] rounded-xl shadow-lg bg-yellow-100">
+            <div className="p-2 bg-purple-200 rounded-t-xl">
+                <h3 className="font-semibold text-purple-700">Chat</h3>
             </div>
             
             <ScrollArea ref={scrollRef} className="flex-1 p-2">
                 {messages.map((msg, index) => (
                     <div key={index} className="mb-2">
                         <div className="flex items-baseline">
-                            <span className="font-semibold mr-2">{msg.username}</span>
+                            <span className="font-semibold mr-2 text-blue-700">{msg.username}</span>
                             <span className="text-xs text-muted-foreground">
                                 {msg.timestamp.toLocaleTimeString()}
                             </span>
@@ -75,7 +75,7 @@ export const QuizChat: React.FC<QuizChatProps> = ({ quizId }) => {
                 ))}
             </ScrollArea>
 
-            <form onSubmit={handleSendMessage} className="p-2 border-t">
+            <form onSubmit={handleSendMessage} className="p-2 bg-purple-100 rounded-b-xl">
                 <div className="flex space-x-2">
                     <Input
                         value={newMessage}
@@ -83,7 +83,7 @@ export const QuizChat: React.FC<QuizChatProps> = ({ quizId }) => {
                         placeholder="Type a message..."
                         className="flex-1"
                     />
-                    <Button type="submit">Send</Button>
+                    <Button type="submit" className="bg-purple-600 text-white rounded-full px-4 py-2 font-bold hover:bg-purple-700 shadow">Send</Button>
                 </div>
             </form>
         </div>

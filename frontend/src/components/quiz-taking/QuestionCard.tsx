@@ -71,14 +71,14 @@ export function QuestionCard({ question, onAnswer, isSubmitting }: QuestionCardP
     };
 
     return (
-        <Card className="w-full max-w-2xl mx-auto">
+        <Card className="w-full max-w-2xl mx-auto shadow-2xl rounded-2xl bg-white p-6">
             <CardHeader>
-                <CardTitle className="text-xl">
+                <CardTitle className="text-2xl font-bold text-purple-700 mb-2">
                     Question {question.orderIndex + 1}
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-                <p className="text-lg">{question.text}</p>
+                <p className="text-lg font-semibold text-gray-900">{question.text}</p>
                 {question.imageUrl && (
                     <img
                         src={question.imageUrl}
@@ -87,18 +87,19 @@ export function QuestionCard({ question, onAnswer, isSubmitting }: QuestionCardP
                     />
                 )}
                 {question.codeSnippet && (
-                    <pre className="bg-muted p-4 rounded-lg overflow-x-auto">
+                    <pre className="bg-blue-100 p-4 rounded-lg overflow-x-auto">
                         <code>{question.codeSnippet}</code>
                     </pre>
                 )}
-                <div className="mt-4">{renderAnswers()}</div>
+                <div className="mt-4">
+                    {renderAnswers()}
+                </div>
             </CardContent>
             <CardFooter>
                 <Button
                     onClick={() => onAnswer([])}
                     disabled={isSubmitting}
-                    variant="outline"
-                    className="w-full"
+                    className="w-full bg-purple-600 text-white rounded-full px-6 py-3 font-bold hover:bg-purple-700 shadow"
                 >
                     {isSubmitting ? 'Submitting...' : 'Submit Answer'}
                 </Button>

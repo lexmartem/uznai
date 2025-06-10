@@ -63,7 +63,7 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md shadow-2xl rounded-2xl bg-white p-8">
           <CardHeader>
             <CardTitle>Invalid Reset Link</CardTitle>
             <CardDescription>
@@ -82,7 +82,7 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-2xl rounded-2xl bg-white p-8">
         <CardHeader>
           <CardTitle>Reset Password</CardTitle>
           <CardDescription>Enter your new password below.</CardDescription>

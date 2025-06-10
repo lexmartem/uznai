@@ -77,8 +77,8 @@ export function QuizDetailClient({ quizId }: QuizDetailClientProps) {
       <div className="space-y-4">
         <h2 className="text-lg font-medium text-gray-900">Questions</h2>
         {questions.map((question) => (
-          <div key={question.id} className="rounded-lg border border-gray-200 p-4">
-            <h3 className="text-base font-medium text-gray-900">{question.questionText}</h3>
+          <div key={question.id} className="rounded-xl shadow-lg p-4 bg-purple-100 mb-4">
+            <h3 className="text-base font-bold text-purple-700">{question.questionText}</h3>
             {question.imageUrl && (
               <img
                 src={question.imageUrl}
@@ -87,19 +87,17 @@ export function QuizDetailClient({ quizId }: QuizDetailClientProps) {
               />
             )}
             {question.codeSnippet && (
-              <pre className="mt-2 rounded-lg bg-gray-100 p-4 font-mono text-sm">
+              <pre className="mt-2 rounded-lg bg-blue-100 p-4 font-mono text-sm">
                 {question.codeSnippet}
               </pre>
             )}
             <div className="mt-4">
-              <h4 className="text-sm font-medium text-gray-900">Answers</h4>
+              <h4 className="text-sm font-bold text-blue-700">Answers</h4>
               <div className="mt-2 space-y-2">
                 {question.answers.map((answer) => (
                   <div
                     key={answer.id}
-                    className={`rounded-lg border p-2 ${
-                      answer.correct ? 'border-green-500 bg-green-50' : 'border-gray-200'
-                    }`}
+                    className={`rounded-lg p-2 shadow-md ${answer.correct ? 'bg-green-200' : 'bg-white'}`}
                   >
                     <p className="text-sm text-gray-900">{answer.answerText}</p>
                     {answer.imageUrl && (
@@ -110,7 +108,7 @@ export function QuizDetailClient({ quizId }: QuizDetailClientProps) {
                       />
                     )}
                     {answer.codeSnippet && (
-                      <pre className="mt-2 rounded-lg bg-gray-100 p-2 font-mono text-xs">
+                      <pre className="mt-2 rounded-lg bg-blue-100 p-2 font-mono text-xs">
                         {answer.codeSnippet}
                       </pre>
                     )}
