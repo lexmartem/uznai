@@ -2,6 +2,8 @@ package com.uznai.repository;
 
 import com.uznai.entity.Question;
 import com.uznai.entity.Quiz;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,6 +15,7 @@ import java.util.UUID;
 @Repository
 public interface QuestionRepository extends JpaRepository<Question, UUID> {
     List<Question> findByQuizOrderByOrderIndex(Quiz quiz);
+    Page<Question> findByQuizOrderByOrderIndex(Quiz quiz, Pageable pageable);
     
     @Query("SELECT MAX(q.orderIndex) FROM Question q WHERE q.quiz = :quiz")
     Integer findMaxOrderIndexByQuiz(@Param("quiz") Quiz quiz);

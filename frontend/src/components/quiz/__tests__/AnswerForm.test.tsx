@@ -1,12 +1,12 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AnswerForm } from '../AnswerForm';
-import { CreateAnswerRequest } from '@/types/answer';
+import { CreateAnswerRequest } from '@/types/quiz';
 
 describe('AnswerForm', () => {
   const mockOnSubmit = jest.fn();
   const mockInitialData: CreateAnswerRequest = {
     answerText: 'Test Answer',
-    isCorrect: true,
+    correct: true,
     orderIndex: 0,
   };
 
@@ -20,7 +20,7 @@ describe('AnswerForm', () => {
         ref: jest.fn(),
         name,
         value: mockInitialData[name as keyof CreateAnswerRequest],
-        checked: name === 'isCorrect' ? mockInitialData.isCorrect : undefined
+        checked: name === 'correct' ? mockInitialData.correct : undefined
       }),
       handleSubmit: (fn: (data: any) => void) => (e: React.FormEvent) => {
         e.preventDefault();
@@ -31,6 +31,7 @@ describe('AnswerForm', () => {
       setValue: jest.fn(),
       getValues: jest.fn(),
       trigger: jest.fn(),
+      reset: jest.fn(),
     }));
   });
 
@@ -43,7 +44,13 @@ describe('AnswerForm', () => {
   });
 
   it('populates form with initial data', () => {
-    render(<AnswerForm onSubmit={mockOnSubmit} initialData={mockInitialData} />);
+    const mockAnswer = {
+      answerText: 'Test Answer',
+      correct: true,
+      orderIndex: 0,
+    };
+
+    render(<AnswerForm onSubmit={mockOnSubmit} initialData={mockAnswer} />);
 
     const answerTextInput = screen.getByLabelText(/answer text/i) as HTMLTextAreaElement;
     const isCorrectCheckbox = screen.getByLabelText(/this is the correct answer/i) as HTMLInputElement;
@@ -100,7 +107,7 @@ describe('AnswerForm', () => {
     await waitFor(() => {
       expect(mockOnSubmit).toHaveBeenCalledWith({
         answerText: 'Test Answer',
-        isCorrect: true,
+        correct: true,
         orderIndex: 0
       });
     });

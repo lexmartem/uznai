@@ -1,5 +1,6 @@
 import { QuizSummary } from '../../types/quiz';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface QuizListProps {
   quizzes: QuizSummary[];
@@ -9,12 +10,13 @@ interface QuizListProps {
 }
 
 export const QuizList = ({ quizzes, isLoading, onDelete, error }: QuizListProps) => {
+  const router = useRouter();
+
   if (isLoading) {
     return (
-      <div className="animate-pulse space-y-4">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-24 rounded-lg bg-gray-200" role="presentation" />
-        ))}
+      <div className="text-center py-12">
+        <div data-testid="loading-spinner" className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-indigo-600" />
+        <p className="mt-2 text-sm text-gray-500">Loading quizzes...</p>
       </div>
     );
   }
@@ -54,7 +56,7 @@ export const QuizList = ({ quizzes, isLoading, onDelete, error }: QuizListProps)
         >
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-medium text-gray-900">
-              <Link href={`/quizzes/${quiz.id}`} className="hover:underline">
+              <Link href={`/quizzes/${quiz.id}/questions`} className="hover:underline">
                 {quiz.title}
               </Link>
             </h3>
@@ -68,6 +70,12 @@ export const QuizList = ({ quizzes, isLoading, onDelete, error }: QuizListProps)
               >
                 {quiz.isPublic ? 'Public' : 'Private'}
               </span>
+              <button
+                onClick={() => router.push(`/quizzes/${quiz.id}/take`)}
+                className="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-2.5 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                Take Quiz
+              </button>
               <button
                 onClick={() => onDelete(quiz.id)}
                 className="text-gray-400 hover:text-gray-500"
@@ -93,8 +101,6 @@ export const QuizList = ({ quizzes, isLoading, onDelete, error }: QuizListProps)
           <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
             <div>
               <span>{quiz.questionCount} questions</span>
-              <span className="mx-2">•</span>
-              <span>{quiz.collaboratorCount} collaborators</span>
             </div>
             <div>
               <span>{quiz.activeUsers} active</span>

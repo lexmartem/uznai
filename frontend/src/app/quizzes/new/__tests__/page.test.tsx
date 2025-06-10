@@ -27,7 +27,7 @@ describe('NewQuizPage', () => {
     expect(screen.getByLabelText('Title')).toBeInTheDocument();
     expect(screen.getByLabelText('Description')).toBeInTheDocument();
     expect(screen.getByLabelText('Make this quiz public')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Save Quiz' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create Quiz' })).toBeInTheDocument();
   });
 
   it('handles quiz creation', async () => {
@@ -47,19 +47,13 @@ describe('NewQuizPage', () => {
       target: { value: 'Test Description' },
     });
     fireEvent.click(screen.getByLabelText('Make this quiz public'));
-    fireEvent.click(screen.getByRole('button', { name: 'Save Quiz' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create Quiz' }));
 
-    expect(mockCreateQuiz).toHaveBeenCalledWith(
-      {
-        title: 'Test Quiz',
-        description: 'Test Description',
-        isPublic: true,
-      },
-      expect.objectContaining({
-        onSuccess: expect.any(Function),
-        onError: expect.any(Function),
-      })
-    );
+    expect(mockCreateQuiz).toHaveBeenCalledWith({
+      title: 'Test Quiz',
+      description: 'Test Description',
+      isPublic: true,
+    });
   });
 
   it('shows loading state', () => {
@@ -71,8 +65,8 @@ describe('NewQuizPage', () => {
 
     render(<NewQuizPage />, { wrapper: TestWrapper });
 
-    expect(screen.getByRole('button', { name: 'Saving...' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Saving...' })).toBeDisabled();
+    const submitButton = screen.getByRole('button', { name: 'Creating...' });
+    expect(submitButton).toBeDisabled();
   });
 
   it('shows error state', () => {

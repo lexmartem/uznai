@@ -15,6 +15,5 @@ public class QuizSummaryResponse {
     private LocalDateTime updatedAt;
     private UserResponse creator;
     private Integer questionCount;
-    private Integer collaboratorCount;
     private Integer activeUserCount;
 } 

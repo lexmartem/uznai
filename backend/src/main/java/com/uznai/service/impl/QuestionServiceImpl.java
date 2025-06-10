@@ -47,8 +47,7 @@ public class QuestionServiceImpl implements QuestionService {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new NotFoundException("Quiz not found"));
 
-        if (!quiz.getCreator().equals(user) && !quiz.isPublic() && 
-            !quiz.getCollaborators().stream().anyMatch(c -> c.getUser().equals(user))) {
+        if (!quiz.getCreator().equals(user) && !quiz.isPublic()) {
             throw new UnauthorizedException("You don't have access to this quiz");
         }
 
@@ -150,8 +149,7 @@ public class QuestionServiceImpl implements QuestionService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new NotFoundException("Question not found"));
 
-        if (!question.getQuiz().getCreator().equals(user) && !question.getQuiz().isPublic() && 
-            !question.getQuiz().getCollaborators().stream().anyMatch(c -> c.getUser().equals(user))) {
+        if (!question.getQuiz().getCreator().equals(user) && !question.getQuiz().isPublic()) {
             throw new UnauthorizedException("You don't have access to this quiz");
         }
 

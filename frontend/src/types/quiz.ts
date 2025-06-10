@@ -35,12 +35,6 @@ export interface Question {
   version: number;
 }
 
-export interface QuizCollaborator {
-  id: string;
-  username: string;
-  avatarUrl: string;
-}
-
 export interface Quiz {
   id: string;
   title: string;
@@ -49,7 +43,6 @@ export interface Quiz {
   createdAt: string;
   updatedAt: string;
   createdBy: string;
-  collaborators: QuizCollaborator[];
   questions: Question[];
   version: number;
 }
@@ -70,7 +63,6 @@ export interface CreateQuizRequest {
   title: string;
   description: string;
   isPublic: boolean;
-  collaborators?: string[];
 }
 
 export interface UpdateQuizRequest extends CreateQuizRequest {

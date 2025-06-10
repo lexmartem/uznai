@@ -4,6 +4,88 @@ import { useQuizzes } from '@hooks/useQuizzes';
 import { TestWrapper } from '@/test-utils/test-wrapper';
 
 jest.mock('@hooks/useQuizzes');
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      route: '/',
+      pathname: '',
+      query: {},
+      asPath: '',
+      push: jest.fn(),
+      replace: jest.fn(),
+    };
+  },
+}));
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    // eslint-disable-next-line jsx-a11y/alt-text
+    return <img {...props} />;
+  },
+}));
+jest.mock('zod', () => ({
+  z: {
+    object: () => ({
+      parse: jest.fn(),
+      safeParse: jest.fn(),
+    }),
+    string: () => ({
+      min: jest.fn().mockReturnThis(),
+      max: jest.fn().mockReturnThis(),
+      optional: jest.fn().mockReturnThis(),
+      url: jest.fn().mockReturnThis(),
+    }),
+    boolean: () => ({
+      default: jest.fn().mockReturnThis(),
+    }),
+    array: () => ({
+      default: jest.fn().mockReturnThis(),
+    }),
+    number: () => ({
+      min: jest.fn().mockReturnThis(),
+    }),
+    enum: () => jest.fn().mockReturnThis(),
+  },
+}));
+jest.mock('@hookform/resolvers/zod', () => ({
+  zodResolver: () => jest.fn(),
+}));
+jest.mock('react-hook-form', () => ({
+  ...jest.requireActual('react-hook-form'),
+  useForm: () => ({
+    register: (name: string) => ({
+      onChange: jest.fn(),
+      onBlur: jest.fn(),
+      ref: jest.fn(),
+      name
+    }),
+    handleSubmit: (fn: any) => (e: any) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data: Record<string, any> = Object.fromEntries(formData.entries());
+      // Convert checkbox values to boolean
+      Object.keys(data).forEach(key => {
+        if (data[key] === 'on') {
+          data[key] = true;
+        }
+      });
+      fn(data);
+    },
+    watch: jest.fn().mockReturnValue(undefined),
+    formState: { errors: {} },
+    setValue: jest.fn(),
+    getValues: jest.fn(),
+    trigger: jest.fn(),
+  })
+}));
+jest.mock('@/services/websocket-service', () => ({
+  websocketService: {
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+    subscribeToQuiz: jest.fn().mockReturnValue(() => {}),
+    sendQuizChange: jest.fn(),
+  },
+}));
 
 describe('QuizListPage', () => {
   const mockQuizzes = [
@@ -65,17 +147,15 @@ describe('QuizListPage', () => {
 
   it('shows loading state', () => {
     (useQuizzes as jest.Mock).mockReturnValue({
-      quizzes: [],
+      quizzes: undefined,
       isLoading: true,
       error: null,
-      totalPages: 1,
-      deleteQuiz: jest.fn(),
     });
 
     render(<QuizListPage />, { wrapper: TestWrapper });
 
-    const loadingSkeletons = screen.getAllByRole('presentation');
-    expect(loadingSkeletons).toHaveLength(3);
+    // Look for loading spinner
+    expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
   });
 
   it('shows empty state', () => {

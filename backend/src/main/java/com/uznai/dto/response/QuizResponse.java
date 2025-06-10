@@ -18,5 +18,4 @@ public class QuizResponse {
     private LocalDateTime updatedAt;
     private UserResponse creator;
     private List<QuestionResponse> questions;
-    private List<UserResponse> collaborators;
 }

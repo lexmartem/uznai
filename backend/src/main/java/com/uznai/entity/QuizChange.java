@@ -44,8 +44,6 @@ public class QuizChange {
         QUESTION_DELETED,
         ANSWER_ADDED,
         ANSWER_UPDATED,
-        ANSWER_DELETED,
-        COLLABORATOR_ADDED,
-        COLLABORATOR_REMOVED
+        ANSWER_DELETED
     }
 } 

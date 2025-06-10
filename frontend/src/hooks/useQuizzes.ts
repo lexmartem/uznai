@@ -1,3 +1,5 @@
+'use client';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import quizService from '../services/quiz-service';
 import { Quiz, QuizSummary, CreateQuizRequest, UpdateQuizRequest } from '../types/quiz';

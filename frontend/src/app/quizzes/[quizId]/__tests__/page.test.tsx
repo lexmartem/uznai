@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import QuizPage from '../page';
+import QuizPage from '../../[quizId]/page';
 import { useQuizzes, useQuiz } from '@hooks/useQuizzes';
 import { useQuestions } from '@hooks/useQuestions';
 import { useAnswers } from '@hooks/useAnswers';
@@ -11,6 +11,89 @@ jest.mock('@hooks/useQuizzes', () => ({
 }));
 jest.mock('@hooks/useQuestions');
 jest.mock('@hooks/useAnswers');
+
+jest.mock('next/router', () => ({
+  useRouter() {
+    return {
+      route: '/',
+      pathname: '',
+      query: {},
+      asPath: '',
+      push: jest.fn(),
+      replace: jest.fn(),
+    };
+  },
+}));
+jest.mock('next/image', () => ({
+  __esModule: true,
+  default: (props: any) => {
+    // eslint-disable-next-line jsx-a11y/alt-text
+    return <img {...props} />;
+  },
+}));
+jest.mock('zod', () => ({
+  z: {
+    object: () => ({
+      parse: jest.fn(),
+      safeParse: jest.fn(),
+    }),
+    string: () => ({
+      min: jest.fn().mockReturnThis(),
+      max: jest.fn().mockReturnThis(),
+      optional: jest.fn().mockReturnThis(),
+      url: jest.fn().mockReturnThis(),
+    }),
+    boolean: () => ({
+      default: jest.fn().mockReturnThis(),
+    }),
+    array: () => ({
+      default: jest.fn().mockReturnThis(),
+    }),
+    number: () => ({
+      min: jest.fn().mockReturnThis(),
+    }),
+    enum: () => jest.fn().mockReturnThis(),
+  },
+}));
+jest.mock('@hookform/resolvers/zod', () => ({
+  zodResolver: () => jest.fn(),
+}));
+jest.mock('react-hook-form', () => ({
+  ...jest.requireActual('react-hook-form'),
+  useForm: () => ({
+    register: (name: string) => ({
+      onChange: jest.fn(),
+      onBlur: jest.fn(),
+      ref: jest.fn(),
+      name
+    }),
+    handleSubmit: (fn: any) => (e: any) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data: Record<string, any> = Object.fromEntries(formData.entries());
+      // Convert checkbox values to boolean
+      Object.keys(data).forEach(key => {
+        if (data[key] === 'on') {
+          data[key] = true;
+        }
+      });
+      fn(data);
+    },
+    watch: jest.fn().mockReturnValue(undefined),
+    formState: { errors: {} },
+    setValue: jest.fn(),
+    getValues: jest.fn(),
+    trigger: jest.fn(),
+  })
+}));
+jest.mock('@/services/websocket-service', () => ({
+  websocketService: {
+    connect: jest.fn(),
+    disconnect: jest.fn(),
+    subscribeToQuiz: jest.fn().mockReturnValue(() => {}),
+    sendQuizChange: jest.fn(),
+  },
+}));
 
 describe('QuizPage', () => {
   const mockQuiz = {
@@ -68,14 +151,14 @@ describe('QuizPage', () => {
   });
 
   it('renders quiz details', () => {
-    render(<QuizPage params={{ id: '1' }} />, { wrapper: TestWrapper });
+    render(<QuizPage params={{ quizId: '1' }} />, { wrapper: TestWrapper });
 
     expect(screen.getByText('Test Quiz')).toBeInTheDocument();
     expect(screen.getByText('Test Description')).toBeInTheDocument();
   });
 
   it('renders questions and answers', () => {
-    render(<QuizPage params={{ id: '1' }} />, { wrapper: TestWrapper });
+    render(<QuizPage params={{ quizId: '1' }} />, { wrapper: TestWrapper });
 
     expect(screen.getByText('Test Question 1')).toBeInTheDocument();
   });
@@ -87,7 +170,7 @@ describe('QuizPage', () => {
       error: null,
     });
 
-    render(<QuizPage params={{ id: '1' }} />, { wrapper: TestWrapper });
+    render(<QuizPage params={{ quizId: '1' }} />, { wrapper: TestWrapper });
 
     expect(screen.getByRole('presentation')).toBeInTheDocument();
   });
@@ -99,7 +182,7 @@ describe('QuizPage', () => {
       error: new Error('Failed to load quiz'),
     });
 
-    render(<QuizPage params={{ id: '1' }} />, { wrapper: TestWrapper });
+    render(<QuizPage params={{ quizId: '1' }} />, { wrapper: TestWrapper });
 
     expect(screen.getByText('Failed to load quiz')).toBeInTheDocument();
   });

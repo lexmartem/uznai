@@ -4,8 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
 public class CreateQuizRequest {
     @NotBlank(message = "Title is required")
@@ -15,6 +13,4 @@ public class CreateQuizRequest {
     
     @NotNull(message = "Public status is required")
     private Boolean isPublic;
-    
-    private List<String> collaboratorEmails;
 } 

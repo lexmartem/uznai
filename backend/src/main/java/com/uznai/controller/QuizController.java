@@ -37,13 +37,6 @@ public class QuizController {
         return ResponseEntity.ok(quizService.getCreatedQuizzes(userPrincipal, pageable));
     }
 
-    @GetMapping("/collaborated")
-    public ResponseEntity<Page<QuizSummaryResponse>> getCollaboratedQuizzes(
-            @AuthenticationPrincipal UserPrincipal userPrincipal,
-            Pageable pageable) {
-        return ResponseEntity.ok(quizService.getCollaboratedQuizzes(userPrincipal, pageable));
-    }
-
     @GetMapping("/public")
     public ResponseEntity<Page<QuizSummaryResponse>> getPublicQuizzes(Pageable pageable) {
         return ResponseEntity.ok(quizService.getPublicQuizzes(pageable));

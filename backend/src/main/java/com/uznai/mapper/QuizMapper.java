@@ -6,7 +6,6 @@ import com.uznai.dto.response.QuizResponse;
 import com.uznai.dto.response.QuizSummaryResponse;
 import com.uznai.dto.response.UserResponse;
 import com.uznai.entity.Quiz;
-import com.uznai.entity.QuizCollaborator;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -28,7 +27,6 @@ public abstract class QuizMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "creator", ignore = true)
     @Mapping(target = "questions", ignore = true)
-    @Mapping(target = "collaborators", ignore = true)
     @Mapping(target = "changes", ignore = true)
     @Mapping(target = "version", ignore = true)
     public abstract Quiz toEntity(CreateQuizRequest request);
@@ -38,7 +36,6 @@ public abstract class QuizMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "creator", ignore = true)
     @Mapping(target = "questions", ignore = true)
-    @Mapping(target = "collaborators", ignore = true)
     @Mapping(target = "changes", ignore = true)
     public abstract void updateEntity(UpdateQuizRequest request, @MappingTarget Quiz quiz);
 
@@ -51,20 +48,9 @@ public abstract class QuizMapper {
     @Mapping(target = "updatedAt", source = "updatedAt")
     @Mapping(target = "creator", source = "creator")
     @Mapping(target = "questions", source = "questions")
-    @Mapping(target = "collaborators", expression = "java(mapCollaborators(quiz.getCollaborators()))")
     public abstract QuizResponse toResponse(Quiz quiz);
 
     public abstract QuizSummaryResponse toSummaryResponse(Quiz quiz);
-
-    protected List<UserResponse> mapCollaborators(Set<QuizCollaborator> collaborators) {
-        if (collaborators == null) {
-            return java.util.Collections.emptyList();
-        }
-        return collaborators.stream()
-                .map(QuizCollaborator::getUser)
-                .map(userMapper::toResponse)
-                .collect(Collectors.toList());
-    }
 
     protected ZonedDateTime mapLocalDateTime(LocalDateTime localDateTime) {
         return localDateTime != null ? localDateTime.atZone(java.time.ZoneId.systemDefault()) : null;

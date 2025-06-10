@@ -23,7 +23,6 @@ import java.util.UUID;
 public interface QuizService {
     Page<QuizSummaryResponse> getUserQuizzes(UserPrincipal userPrincipal, Pageable pageable);
     Page<QuizSummaryResponse> getCreatedQuizzes(UserPrincipal userPrincipal, Pageable pageable);
-    Page<QuizSummaryResponse> getCollaboratedQuizzes(UserPrincipal userPrincipal, Pageable pageable);
     Page<QuizSummaryResponse> getPublicQuizzes(Pageable pageable);
     Page<QuizSummaryResponse> getPublicQuizzesByUser(UUID userId, Pageable pageable);
     QuizResponse getQuizById(UUID quizId, UserPrincipal userPrincipal);

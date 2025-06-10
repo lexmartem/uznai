@@ -74,8 +74,9 @@ export const QuizForm: React.FC<QuizFormProps> = ({ quizId, initialData, onSave 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
+            <label htmlFor="quiz-title" className="block text-sm font-medium mb-1">Title</label>
             <input
+              id="quiz-title"
               type="text"
               value={quizData.title}
               onChange={handleTitleChange}
@@ -84,8 +85,9 @@ export const QuizForm: React.FC<QuizFormProps> = ({ quizId, initialData, onSave 
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
+            <label htmlFor="quiz-description" className="block text-sm font-medium mb-1">Description</label>
             <textarea
+              id="quiz-description"
               value={quizData.description}
               onChange={handleDescriptionChange}
               className="w-full p-2 border rounded"
@@ -95,12 +97,13 @@ export const QuizForm: React.FC<QuizFormProps> = ({ quizId, initialData, onSave 
 
           <div className="flex items-center">
             <input
+              id="quiz-public"
               type="checkbox"
               checked={quizData.isPublic}
               onChange={handlePublicChange}
               className="mr-2"
             />
-            <label className="text-sm font-medium">Make this quiz public</label>
+            <label htmlFor="quiz-public" className="text-sm font-medium">Make this quiz public</label>
           </div>
 
           {/* Question list and management components */}

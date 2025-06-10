@@ -36,8 +36,8 @@ describe('QuizList', () => {
   });
 
   it('renders loading state', () => {
-    const { container } = render(<QuizList quizzes={[]} isLoading={true} onDelete={mockOnDelete} />);
-    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
+    render(<QuizList quizzes={[]} isLoading={true} onDelete={mockOnDelete} />);
+    expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
   });
 
   it('renders empty state', () => {

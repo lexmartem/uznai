@@ -47,14 +47,6 @@ public class QuizServiceImpl implements QuizService {
                 .map(quizMapper::toSummaryResponse);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public Page<QuizSummaryResponse> getCollaboratedQuizzes(UserPrincipal userPrincipal, Pageable pageable) {
-        User user = userRepository.findById(userPrincipal.getId())
-                .orElseThrow(() -> new NotFoundException("User not found"));
-        return quizRepository.findCollaboratedQuizzes(user, pageable)
-                .map(quizMapper::toSummaryResponse);
-    }
 
     @Override
     @Transactional(readOnly = true)
@@ -78,8 +70,7 @@ public class QuizServiceImpl implements QuizService {
         Quiz quiz = quizRepository.findById(quizId)
                 .orElseThrow(() -> new NotFoundException("Quiz not found"));
 
-        if (!quiz.getCreator().equals(user) && !quiz.isPublic() && 
-            !quiz.getCollaborators().stream().anyMatch(c -> c.getUser().equals(user))) {
+        if (!quiz.getCreator().equals(user) && !quiz.isPublic()) {
             throw new UnauthorizedException("You don't have access to this quiz");
         }
 

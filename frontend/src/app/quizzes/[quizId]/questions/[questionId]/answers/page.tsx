@@ -2,11 +2,11 @@ import { AnswersClient } from './AnswersClient';
 
 interface AnswersPageProps {
   params: {
-    id: string;
+    quizId: string;
     questionId: string;
   };
 }
 
 export default function AnswersPage({ params }: AnswersPageProps) {
-  return <AnswersClient quizId={params.id} questionId={params.questionId} />;
+  return <AnswersClient quizId={params.quizId} questionId={params.questionId} />;
 } 
