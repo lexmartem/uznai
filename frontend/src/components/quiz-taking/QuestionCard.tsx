@@ -1,9 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { QuestionType, type Question } from '@/types/quiz-session';
+import { useState } from 'react';
 
 interface QuestionCardProps {
     question: Question;
@@ -12,35 +14,90 @@ interface QuestionCardProps {
 }
 
 export function QuestionCard({ question, onAnswer, isSubmitting }: QuestionCardProps) {
+    const [selectedAnswer, setSelectedAnswer] = useState<string[] | string>('');
+    const [shortAnswerText, setShortAnswerText] = useState('');
+
+    const isMultipleChoiceMultiple = question.originalQuestionType === 'MULTIPLE_CHOICE_MULTIPLE';
+
     const handleMultipleChoiceAnswer = (answerId: string) => {
-        onAnswer([answerId]);
+        if (isMultipleChoiceMultiple) {
+            // For multiple choice questions, toggle the selected answer
+            setSelectedAnswer((prev) => {
+                const currentAnswers = Array.isArray(prev) ? prev : [];
+                if (currentAnswers.includes(answerId)) {
+                    return currentAnswers.filter(id => id !== answerId);
+                } else {
+                    return [...currentAnswers, answerId];
+                }
+            });
+        } else {
+            // For single choice questions, replace the selected answer
+            setSelectedAnswer([answerId]);
+        }
     };
 
     const handleTrueFalseAnswer = (answerId: string) => {
-        onAnswer([answerId]);
+        setSelectedAnswer([answerId]);
     };
 
-    const handleShortAnswer = (text: string) => {
-        onAnswer(text);
+    const handleShortAnswerChange = (text: string) => {
+        setShortAnswerText(text);
+        setSelectedAnswer(text);
+    };
+
+    const handleSubmit = () => {
+        if (question.type === QuestionType.SHORT_ANSWER) {
+            onAnswer(shortAnswerText);
+        } else {
+            onAnswer(selectedAnswer);
+        }
+    };
+
+    const isAnswerSelected = () => {
+        if (question.type === QuestionType.SHORT_ANSWER) {
+            return shortAnswerText.trim().length > 0;
+        } else {
+            return Array.isArray(selectedAnswer) && selectedAnswer.length > 0;
+        }
     };
 
     const renderAnswers = () => {
         switch (question.type) {
             case QuestionType.MULTIPLE_CHOICE:
-                return (
-                    <RadioGroup
-                        onValueChange={handleMultipleChoiceAnswer}
-                        disabled={isSubmitting}
-                        className="space-y-2"
-                    >
-                        {question.answers.map((answer) => (
-                            <div key={answer.id} className="flex items-center space-x-2">
-                                <RadioGroupItem value={answer.id} id={answer.id} />
-                                <Label htmlFor={answer.id}>{answer.text}</Label>
-                            </div>
-                        ))}
-                    </RadioGroup>
-                );
+                if (isMultipleChoiceMultiple) {
+                    // Use checkboxes for multiple choice questions
+                    return (
+                        <div className="space-y-2">
+                            {question.answers.map((answer) => (
+                                <div key={answer.id} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={answer.id}
+                                        checked={Array.isArray(selectedAnswer) && selectedAnswer.includes(answer.id)}
+                                        onCheckedChange={() => handleMultipleChoiceAnswer(answer.id)}
+                                        disabled={isSubmitting}
+                                    />
+                                    <Label htmlFor={answer.id}>{answer.text}</Label>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                } else {
+                    // Use radio buttons for single choice questions
+                    return (
+                        <RadioGroup
+                            onValueChange={handleMultipleChoiceAnswer}
+                            disabled={isSubmitting}
+                            className="space-y-2"
+                        >
+                            {question.answers.map((answer) => (
+                                <div key={answer.id} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={answer.id} id={answer.id} />
+                                    <Label htmlFor={answer.id}>{answer.text}</Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    );
+                }
             case QuestionType.TRUE_FALSE:
                 return (
                     <RadioGroup
@@ -60,7 +117,8 @@ export function QuestionCard({ question, onAnswer, isSubmitting }: QuestionCardP
                 return (
                     <Textarea
                         placeholder="Type your answer here..."
-                        onChange={(e) => handleShortAnswer(e.target.value)}
+                        value={shortAnswerText}
+                        onChange={(e) => handleShortAnswerChange(e.target.value)}
                         disabled={isSubmitting}
                         className="min-h-[100px]"
                     />
@@ -97,9 +155,9 @@ export function QuestionCard({ question, onAnswer, isSubmitting }: QuestionCardP
             </CardContent>
             <CardFooter>
                 <Button
-                    onClick={() => onAnswer([])}
-                    disabled={isSubmitting}
-                    className="w-full bg-purple-600 text-white rounded-full px-6 py-3 font-bold hover:bg-purple-700 shadow"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting || !isAnswerSelected()}
+                    className="w-full bg-purple-600 text-white rounded-full px-6 py-3 font-bold hover:bg-purple-700 shadow disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {isSubmitting ? 'Submitting...' : 'Submit Answer'}
                 </Button>

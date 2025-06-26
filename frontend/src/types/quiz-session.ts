@@ -14,6 +14,7 @@ export interface Question {
     id: string;
     text: string;
     type: QuestionType;
+    originalQuestionType?: string;
     orderIndex: number;
     imageUrl?: string;
     codeSnippet?: string;

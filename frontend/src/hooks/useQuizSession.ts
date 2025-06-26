@@ -95,6 +95,7 @@ export function useQuizSession(quizId: string) {
                 ...q,
                 text: q.questionText,
                 type: mapQuestionType(q.questionType),
+                originalQuestionType: q.questionType,
                 answers: q.answers.map((a: any) => ({
                     ...a,
                     text: a.answerText,

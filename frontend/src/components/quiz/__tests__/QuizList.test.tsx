@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { QuizList } from '../QuizList';
 import { QuizSummary } from '@/types/quiz';
+import { TestWrapper } from '@/test-utils/test-wrapper';
 
 describe('QuizList', () => {
   const mockQuizzes: QuizSummary[] = [
@@ -36,19 +37,31 @@ describe('QuizList', () => {
   });
 
   it('renders loading state', () => {
-    render(<QuizList quizzes={[]} isLoading={true} onDelete={mockOnDelete} />);
+    render(
+      <TestWrapper>
+        <QuizList quizzes={[]} isLoading={true} onDelete={mockOnDelete} />
+      </TestWrapper>
+    );
     expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
   });
 
   it('renders empty state', () => {
-    render(<QuizList quizzes={[]} isLoading={false} onDelete={mockOnDelete} />);
+    render(
+      <TestWrapper>
+        <QuizList quizzes={[]} isLoading={false} onDelete={mockOnDelete} />
+      </TestWrapper>
+    );
     expect(screen.getByText(/no quizzes/i)).toBeInTheDocument();
     expect(screen.getByText(/get started by creating a new quiz/i)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /create quiz/i })).toBeInTheDocument();
   });
 
   it('renders quiz list correctly', () => {
-    render(<QuizList quizzes={mockQuizzes} isLoading={false} onDelete={mockOnDelete} />);
+    render(
+      <TestWrapper>
+        <QuizList quizzes={mockQuizzes} isLoading={false} onDelete={mockOnDelete} />
+      </TestWrapper>
+    );
 
     expect(screen.getByText('Test Quiz 1')).toBeInTheDocument();
     expect(screen.getByText('Test Description 1')).toBeInTheDocument();
@@ -60,7 +73,11 @@ describe('QuizList', () => {
   });
 
   it('shows active user count', () => {
-    render(<QuizList quizzes={mockQuizzes} isLoading={false} onDelete={mockOnDelete} />);
+    render(
+      <TestWrapper>
+        <QuizList quizzes={mockQuizzes} isLoading={false} onDelete={mockOnDelete} />
+      </TestWrapper>
+    );
 
     expect(screen.getByText('1 active')).toBeInTheDocument();
     expect(screen.getByText('0 active')).toBeInTheDocument();
