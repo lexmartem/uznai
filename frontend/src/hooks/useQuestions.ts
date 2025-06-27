@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Question, CreateQuestionRequest, QuizError } from '../types/quiz';
+import { Question, CreateQuestionRequest, UpdateQuestionRequest, QuizError } from '../types/quiz';
 import { ApiClient } from '../lib/api/client';
 
 interface UseQuestionsResult {
@@ -10,8 +10,13 @@ interface UseQuestionsResult {
     onSuccess?: (question: Question) => void;
     onError?: (error: QuizError) => void;
   }) => Promise<void>;
+  updateQuestion: (id: string, data: UpdateQuestionRequest, callbacks?: {
+    onSuccess?: (question: Question) => void;
+    onError?: (error: QuizError) => void;
+  }) => Promise<void>;
   deleteQuestion: (id: string) => Promise<void>;
   isCreating: boolean;
+  isUpdating: boolean;
 }
 
 export function useQuestions(quizId: string): UseQuestionsResult {
@@ -19,6 +24,7 @@ export function useQuestions(quizId: string): UseQuestionsResult {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<QuizError | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     fetchQuestions();
@@ -62,6 +68,28 @@ export function useQuestions(quizId: string): UseQuestionsResult {
     }
   };
 
+  const updateQuestion = async (id: string, data: UpdateQuestionRequest, callbacks?: {
+    onSuccess?: (question: Question) => void;
+    onError?: (error: QuizError) => void;
+  }) => {
+    try {
+      setIsUpdating(true);
+      const response = await ApiClient.put<Question>(`/api/v1/quizzes/${quizId}/questions/${id}`, data);
+      setQuestions(prev => prev.map(question => question.id === id ? response : question));
+      callbacks?.onSuccess?.(response);
+      setError(null);
+    } catch (err) {
+      const error = {
+        message: 'Failed to update question',
+        code: 'UPDATE_ERROR'
+      };
+      setError(error);
+      callbacks?.onError?.(error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const deleteQuestion = async (id: string) => {
     try {
       await ApiClient.delete(`/api/v1/quizzes/${quizId}/questions/${id}`);
@@ -80,7 +108,9 @@ export function useQuestions(quizId: string): UseQuestionsResult {
     isLoading,
     error,
     createQuestion,
+    updateQuestion,
     deleteQuestion,
-    isCreating
+    isCreating,
+    isUpdating
   };
 } 

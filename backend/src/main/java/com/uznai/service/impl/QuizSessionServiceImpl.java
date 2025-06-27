@@ -210,7 +210,10 @@ public class QuizSessionServiceImpl implements QuizSessionService {
 
             boolean isCorrect = false;
             if (userAnswer != null) {
-                if (question.getQuestionType().name().startsWith("MULTIPLE_CHOICE") || question.getQuestionType().name().equals("TRUE_FALSE")) {
+                if (question.getQuestionType().name().startsWith("MULTIPLE_CHOICE") ||
+                    question.getQuestionType().name().equals("TRUE_FALSE") ||
+                    question.getQuestionType().name().equals("IMAGE") ||
+                    question.getQuestionType().name().equals("CODE")) {
                     if (!correctAnswers.isEmpty() && userAnswer.getSelectedAnswerIds() != null) {
                         java.util.List<java.util.UUID> userSelected = java.util.List.of(userAnswer.getSelectedAnswerIds());
                         java.util.List<java.util.UUID> correctIds = correctAnswers.stream().map(Answer::getId).toList();

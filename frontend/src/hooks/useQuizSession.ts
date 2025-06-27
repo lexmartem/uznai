@@ -76,6 +76,10 @@ export function useQuizSession(quizId: string) {
                 return QuestionType.TRUE_FALSE;
             case 'SHORT_ANSWER':
                 return QuestionType.SHORT_ANSWER;
+            case 'IMAGE':
+                return QuestionType.IMAGE;
+            case 'CODE':
+                return QuestionType.CODE;
             default:
                 return QuestionType.MULTIPLE_CHOICE;
         }

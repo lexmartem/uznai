@@ -6,6 +6,7 @@ interface QuestionsPageProps {
   };
 }
 
-export default function QuestionsPage({ params }: QuestionsPageProps) {
-  return <QuestionsClient quizId={params.quizId} />;
+export default async function QuestionsPage({ params }: QuestionsPageProps) {
+  const resolvedParams = await params;
+  return <QuestionsClient quizId={resolvedParams.quizId} />;
 } 

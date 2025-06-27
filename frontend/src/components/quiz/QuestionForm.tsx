@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CreateQuestionRequest, QuestionType } from '../../types/quiz';
+import { useEffect } from 'react';
 
 const questionSchema = z.object({
   questionText: z.string().min(1, 'Question text is required').max(500, 'Question text is too long'),
@@ -14,8 +15,23 @@ const questionSchema = z.object({
     'CODE'
   ] as const),
   orderIndex: z.number().min(0),
-  imageUrl: z.string().url().optional(),
-  codeSnippet: z.string().optional(),
+  imageUrl: z.string().url('Invalid URL').nullable().optional(),
+  codeSnippet: z.string().nullable().optional(),
+}).superRefine((data, ctx) => {
+  if (data.questionType === 'IMAGE' && (!data.imageUrl || data.imageUrl === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Image URL is required for image questions',
+      path: ['imageUrl'],
+    });
+  }
+  if (data.questionType === 'CODE' && (!data.codeSnippet || data.codeSnippet === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'Code snippet is required for code questions',
+      path: ['codeSnippet'],
+    });
+  }
 });
 
 type QuestionFormData = z.infer<typeof questionSchema>;
@@ -41,10 +57,16 @@ export const QuestionForm = ({ initialData, onSubmit, isLoading }: QuestionFormP
     },
   });
 
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      console.log('Validation errors:', errors);
+    }
+  }, [errors]);
+
   const questionType = watch('questionType');
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit((data) => { console.log('QuestionForm onSubmit', data); onSubmit(data); })} className="space-y-4">
       <div>
         <label htmlFor="questionText" className="block text-sm font-medium text-gray-700">
           Question Text

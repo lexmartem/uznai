@@ -1,8 +1,10 @@
 package com.uznai.controller;
 
 import com.uznai.dto.request.CreateQuestionRequest;
+import com.uznai.dto.request.UpdateQuestionRequest;
 import com.uznai.dto.response.QuestionResponse;
 import com.uznai.dto.request.CreateAnswerRequest;
+import com.uznai.dto.request.UpdateAnswerRequest;
 import com.uznai.dto.response.AnswerResponse;
 import com.uznai.entity.User;
 import com.uznai.service.QuestionService;
@@ -37,6 +39,15 @@ public class QuestionController {
         return ResponseEntity.ok(questionService.createQuestion(quizId, request, userPrincipal));
     }
 
+    @PutMapping("/{questionId}")
+    public ResponseEntity<QuestionResponse> updateQuestion(
+            @PathVariable UUID quizId,
+            @PathVariable UUID questionId,
+            @Valid @RequestBody UpdateQuestionRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        return ResponseEntity.ok(questionService.updateQuestion(questionId, request, userPrincipal));
+    }
+
     @DeleteMapping("/{questionId}")
     public ResponseEntity<Void> deleteQuestion(
             @PathVariable UUID quizId,
@@ -53,6 +64,17 @@ public class QuestionController {
             @Valid @RequestBody CreateAnswerRequest request,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
         AnswerResponse answer = questionService.createAnswer(quizId, questionId, request, userPrincipal);
+        return ResponseEntity.ok(answer);
+    }
+
+    @PutMapping("/{questionId}/answers/{answerId}")
+    public ResponseEntity<AnswerResponse> updateAnswer(
+            @PathVariable UUID quizId,
+            @PathVariable UUID questionId,
+            @PathVariable UUID answerId,
+            @Valid @RequestBody UpdateAnswerRequest request,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+        AnswerResponse answer = questionService.updateAnswer(answerId, request, userPrincipal);
         return ResponseEntity.ok(answer);
     }
 

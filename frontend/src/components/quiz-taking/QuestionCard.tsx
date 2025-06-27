@@ -123,6 +123,43 @@ export function QuestionCard({ question, onAnswer, isSubmitting }: QuestionCardP
                         className="min-h-[100px]"
                     />
                 );
+            case QuestionType.IMAGE:
+            case QuestionType.CODE:
+                // IMAGE and CODE questions can have multiple choice answers
+                // Check if it's multiple choice based on originalQuestionType
+                if (question.originalQuestionType === 'MULTIPLE_CHOICE_MULTIPLE') {
+                    return (
+                        <div className="space-y-2">
+                            {question.answers.map((answer) => (
+                                <div key={answer.id} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={answer.id}
+                                        checked={Array.isArray(selectedAnswer) && selectedAnswer.includes(answer.id)}
+                                        onCheckedChange={() => handleMultipleChoiceAnswer(answer.id)}
+                                        disabled={isSubmitting}
+                                    />
+                                    <Label htmlFor={answer.id}>{answer.text}</Label>
+                                </div>
+                            ))}
+                        </div>
+                    );
+                } else {
+                    // Default to single choice for IMAGE and CODE questions
+                    return (
+                        <RadioGroup
+                            onValueChange={handleMultipleChoiceAnswer}
+                            disabled={isSubmitting}
+                            className="space-y-2"
+                        >
+                            {question.answers.map((answer) => (
+                                <div key={answer.id} className="flex items-center space-x-2">
+                                    <RadioGroupItem value={answer.id} id={answer.id} />
+                                    <Label htmlFor={answer.id}>{answer.text}</Label>
+                                </div>
+                            ))}
+                        </RadioGroup>
+                    );
+                }
             default:
                 return null;
         }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuizSession } from '@/hooks/useQuizSession';
 import { useQueryClient } from '@tanstack/react-query';
@@ -12,12 +12,11 @@ import { AlertCircle } from 'lucide-react';
 import { SubmitAnswerRequest } from '@/types/quiz-session';
 
 interface QuizTakingPageProps {
-    params: {
-        quizId: string;
-    };
+    params: Promise<{ quizId: string }>;
 }
 
 export default function QuizTakingPage({ params }: QuizTakingPageProps) {
+    const { quizId } = use(params);
     const router = useRouter();
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [timeRemaining, setTimeRemaining] = useState(0);
@@ -38,7 +37,7 @@ export default function QuizTakingPage({ params }: QuizTakingPageProps) {
         expireSessionMutation,
         activeSession,
         refetchUserSessions,
-    } = useQuizSession(params.quizId);
+    } = useQuizSession(quizId);
 
     useEffect(() => {
         if (session?.startedAt) {
@@ -83,7 +82,7 @@ export default function QuizTakingPage({ params }: QuizTakingPageProps) {
                 // Refetch user sessions and use the latest active session
                 const { data: updatedSessions } = await refetchUserSessions();
                 const foundSession = updatedSessions?.content.find(
-                    (s) => s.quiz.id === params.quizId && s.status === 'IN_PROGRESS'
+                    (s) => s.quiz.id === quizId && s.status === 'IN_PROGRESS'
                 );
                 if (foundSession) {
                     setHasStarted(true);
@@ -114,7 +113,7 @@ export default function QuizTakingPage({ params }: QuizTakingPageProps) {
         } else {
             completeSessionMutation.mutate(session.id, {
                 onSuccess: () => {
-                    router.push(`/quizzes/${params.quizId}/results`);
+                    router.push(`/quizzes/${quizId}/results`);
                 },
             });
         }

@@ -4,16 +4,16 @@ import { useRouter } from 'next/navigation';
 import { useQuizResults } from '@/hooks/useQuizResults';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, XCircle } from 'lucide-react';
+import { use } from "react";
 
 interface QuizResultPageProps {
-    params: {
-        quizId: string;
-    };
+    params: Promise<{ quizId: string }>;
 }
 
 export default function QuizResultPage({ params }: QuizResultPageProps) {
+    const { quizId } = use(params);
     const router = useRouter();
-    const { result, isLoading } = useQuizResults(params.quizId);
+    const { result, isLoading } = useQuizResults(quizId);
 
     if (isLoading) {
         return <div>Loading results...</div>;
@@ -102,13 +102,13 @@ export default function QuizResultPage({ params }: QuizResultPageProps) {
                     <Button
                         variant="outline"
                         className="bg-gray-100 text-gray-700 rounded-full px-6 py-3 font-bold hover:bg-gray-200 shadow"
-                        onClick={() => router.push(`/quizzes/${params.quizId}`)}
+                        onClick={() => router.push(`/quizzes/${quizId}`)}
                     >
                         Back to Quiz
                     </Button>
                     <Button
                         className="bg-purple-600 text-white rounded-full px-6 py-3 font-bold hover:bg-purple-700 shadow"
-                        onClick={() => router.push(`/quizzes/${params.quizId}/take`)}
+                        onClick={() => router.push(`/quizzes/${quizId}/take`)}
                     >
                         Try Again
                     </Button>

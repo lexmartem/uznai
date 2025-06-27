@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Answer, CreateAnswerRequest, QuizError } from '@/types/quiz';
+import { Answer, CreateAnswerRequest, UpdateAnswerRequest, QuizError } from '@/types/quiz';
 import { ApiClient } from '@/lib/api/client';
 
 interface UseAnswersResult {
@@ -10,8 +10,13 @@ interface UseAnswersResult {
     onSuccess?: (answer: Answer) => void;
     onError?: (error: QuizError) => void;
   }) => Promise<void>;
+  updateAnswer: (id: string, data: UpdateAnswerRequest, callbacks?: {
+    onSuccess?: (answer: Answer) => void;
+    onError?: (error: QuizError) => void;
+  }) => Promise<void>;
   deleteAnswer: (id: string) => Promise<void>;
   isCreating: boolean;
+  isUpdating: boolean;
 }
 
 export function useAnswers(quizId: string, questionId: string): UseAnswersResult {
@@ -19,12 +24,15 @@ export function useAnswers(quizId: string, questionId: string): UseAnswersResult
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<QuizError | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
+    if (!quizId || !questionId) return;
     fetchAnswers();
   }, [quizId, questionId]);
 
   const fetchAnswers = async () => {
+    if (!quizId || !questionId) return;
     try {
       setIsLoading(true);
       const response = await ApiClient.get<Answer[]>(`/api/v1/quizzes/${quizId}/questions/${questionId}/answers`);
@@ -44,6 +52,7 @@ export function useAnswers(quizId: string, questionId: string): UseAnswersResult
     onSuccess?: (answer: Answer) => void;
     onError?: (error: QuizError) => void;
   }) => {
+    if (!quizId || !questionId) return;
     try {
       setIsCreating(true);
       const response = await ApiClient.post<Answer>(`/api/v1/quizzes/${quizId}/questions/${questionId}/answers`, data);
@@ -62,7 +71,31 @@ export function useAnswers(quizId: string, questionId: string): UseAnswersResult
     }
   };
 
+  const updateAnswer = async (id: string, data: UpdateAnswerRequest, callbacks?: {
+    onSuccess?: (answer: Answer) => void;
+    onError?: (error: QuizError) => void;
+  }) => {
+    if (!quizId || !questionId) return;
+    try {
+      setIsUpdating(true);
+      const response = await ApiClient.put<Answer>(`/api/v1/quizzes/${quizId}/questions/${questionId}/answers/${id}`, data);
+      setAnswers(prev => prev.map(answer => answer.id === id ? response : answer));
+      callbacks?.onSuccess?.(response);
+      setError(null);
+    } catch (err) {
+      const error = {
+        message: 'Failed to update answer',
+        code: 'UPDATE_ERROR'
+      };
+      setError(error);
+      callbacks?.onError?.(error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const deleteAnswer = async (id: string) => {
+    if (!quizId || !questionId) return;
     try {
       await ApiClient.delete(`/api/v1/quizzes/${quizId}/questions/${questionId}/answers/${id}`);
       setAnswers(prev => prev.filter(answer => answer.id !== id));
@@ -80,7 +113,9 @@ export function useAnswers(quizId: string, questionId: string): UseAnswersResult
     isLoading,
     error,
     createAnswer,
+    updateAnswer,
     deleteAnswer,
-    isCreating
+    isCreating,
+    isUpdating
   };
 } 

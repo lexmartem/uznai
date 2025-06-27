@@ -6,6 +6,7 @@ interface QuizPageProps {
   };
 }
 
-export default function QuizPage({ params }: QuizPageProps) {
-  return <QuizDetailClient quizId={params.quizId} />;
+export default async function QuizPage({ params }: QuizPageProps) {
+  const { quizId } = await params;
+  return <QuizDetailClient quizId={quizId} />;
 } 

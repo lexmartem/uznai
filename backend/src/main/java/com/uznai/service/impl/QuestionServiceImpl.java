@@ -1,6 +1,7 @@
 package com.uznai.service.impl;
 
 import com.uznai.dto.request.CreateAnswerRequest;
+import com.uznai.dto.request.UpdateAnswerRequest;
 import com.uznai.dto.request.CreateQuestionRequest;
 import com.uznai.dto.request.UpdateQuestionRequest;
 import com.uznai.dto.response.AnswerResponse;
@@ -72,6 +73,9 @@ public class QuestionServiceImpl implements QuestionService {
         question.setQuestionText(request.getQuestionText());
         question.setQuestionType(request.getQuestionType());
         question.setOrderIndex(request.getOrderIndex());
+        question.setImageUrl(request.getImageUrl());
+        question.setCodeSnippet(request.getCodeSnippet());
+        question.setExplanation(request.getExplanation());
         question.setQuiz(quiz);
         question.setVersion(1);
 
@@ -98,6 +102,9 @@ public class QuestionServiceImpl implements QuestionService {
         question.setQuestionText(request.getQuestionText());
         question.setQuestionType(request.getQuestionType());
         question.setOrderIndex(request.getOrderIndex());
+        question.setImageUrl(request.getImageUrl());
+        question.setCodeSnippet(request.getCodeSnippet());
+        question.setExplanation(request.getExplanation());
         question.setVersion(question.getVersion() + 1);
 
         Question updatedQuestion = questionRepository.save(question);
@@ -171,5 +178,33 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         answerRepository.delete(answer);
+    }
+
+    @Override
+    @Transactional
+    public AnswerResponse updateAnswer(UUID answerId, UpdateAnswerRequest request, UserPrincipal userPrincipal) {
+        User user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        Answer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new NotFoundException("Answer not found"));
+
+        if (!answer.getQuestion().getQuiz().getCreator().equals(user)) {
+            throw new UnauthorizedException("Only quiz creator can update answers");
+        }
+
+        if (!answer.getVersion().equals(request.getVersion())) {
+            throw new UnauthorizedException("Answer has been modified by another user");
+        }
+
+        answer.setAnswerText(request.getAnswerText());
+        answer.setCorrect(request.getCorrect());
+        answer.setOrderIndex(request.getOrderIndex());
+        answer.setImageUrl(request.getImageUrl());
+        answer.setCodeSnippet(request.getCodeSnippet());
+        answer.setExplanation(request.getExplanation());
+        answer.setVersion(answer.getVersion() + 1);
+
+        Answer updatedAnswer = answerRepository.save(answer);
+        return answerMapper.toResponse(updatedAnswer);
     }
 } 

@@ -14,8 +14,9 @@ interface AnswersClientProps {
 
 export function AnswersClient({ quizId, questionId }: AnswersClientProps) {
   const router = useRouter();
-  const { answers, createAnswer, isCreating, error } = useAnswers(quizId, questionId);
+  const { answers, createAnswer, updateAnswer, deleteAnswer, isCreating, isUpdating, error } = useAnswers(quizId, questionId);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingAnswer, setEditingAnswer] = useState<Answer | null>(null);
 
   const handleCreateAnswer = async (data: any) => {
     try {
@@ -30,6 +31,35 @@ export function AnswersClient({ quizId, questionId }: AnswersClientProps) {
       });
     } catch (error) {
       console.error('Failed to create answer:', error);
+    }
+  };
+
+  const handleUpdateAnswer = async (data: any) => {
+    if (!editingAnswer) return;
+    
+    try {
+      await updateAnswer(editingAnswer.id, { ...data, version: editingAnswer.version }, {
+        onSuccess: (answer: Answer) => {
+          setEditingAnswer(null);
+          router.refresh();
+        },
+        onError: (error) => {
+          console.error('Failed to update answer:', error);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to update answer:', error);
+    }
+  };
+
+  const handleDeleteAnswer = async (answerId: string) => {
+    if (confirm('Are you sure you want to delete this answer? This action cannot be undone.')) {
+      try {
+        await deleteAnswer(answerId);
+        router.refresh();
+      } catch (error) {
+        console.error('Failed to delete answer:', error);
+      }
     }
   };
 
@@ -63,6 +93,29 @@ export function AnswersClient({ quizId, questionId }: AnswersClientProps) {
         </div>
       )}
 
+      {editingAnswer && (
+        <div className="mt-8 bg-white shadow sm:rounded-lg">
+          <div className="px-4 py-5 sm:p-6">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">Edit Answer</h3>
+            <div className="mt-5">
+              <AnswerForm 
+                initialData={editingAnswer} 
+                onSubmit={handleUpdateAnswer} 
+                isLoading={isUpdating} 
+              />
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={() => setEditingAnswer(null)}
+                className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="mt-8">
         {answers && answers.length > 0 ? (
           <ul className="divide-y divide-gray-200">
@@ -76,12 +129,24 @@ export function AnswersClient({ quizId, questionId }: AnswersClientProps) {
                         {answer.correct ? 'Correct Answer' : 'Incorrect Answer'}
                       </p>
                     </div>
-                    <div className="ml-4 flex-shrink-0">
+                    <div className="ml-4 flex-shrink-0 flex items-center space-x-2">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         answer.correct ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                       }`}>
                         {answer.correct ? 'Correct' : 'Incorrect'}
                       </span>
+                      <button
+                        onClick={() => setEditingAnswer(answer)}
+                        className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteAnswer(answer.id)}
+                        className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
